@@ -59,8 +59,8 @@ DATABASES = {
         'NAME': 'ddsc_management',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'USER': 'ddsc_management',
-        'PASSWORD': 'f!*))(x!tx',
-        'HOST': 'p-web-db-00-d03.external-nens.local',
+        'PASSWORD': 'aaaaaaa',
+        'HOST': 'TODO',
         'PORT': '5432',
         }
     }
@@ -103,7 +103,7 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static_media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'q8ey^=$$acsjno&^tj!c&t7t_b*^@pq&$d!z@)pdas9r1f+y*z'
+SECRET_KEY = 'xxxxxxxxxxxxxxx'
 
 ROOT_URLCONF = 'ddsc_management.urls'
 
@@ -156,7 +156,7 @@ INSTALLED_APPS = (
 )
 
 # TODO: Put your real url here to configure Sentry.
-SENTRY_DSN = 'http://some:thing@sentry.lizardsystem.nl/1'
+#SENTRY_DSN = 'http://some:thing@sentry.lizardsystem.nl/1'
 
 # TODO: add gauges ID here. Generate one separately for the staging, too.
 UI_GAUGES_SITE_ID = ''  # Staging has a separate one.
