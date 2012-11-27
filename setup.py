@@ -19,10 +19,6 @@ install_requires = [
     'python-memcached',
     'raven',
     'werkzeug',
-    # Maptree and wms are included for demo purposes; almost every site needs
-    # them anyway.
-    'lizard-maptree',
-    'lizard-wms',
     ],
 
 setup(name='ddsc-management',
