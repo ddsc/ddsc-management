@@ -4,20 +4,38 @@
 {{ block.super }}
 <link rel="stylesheet"
       type="text/css"
+      href="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/bootstrap/dataTables.bootstrap.css" />
+<link rel="stylesheet"
+      type="text/css"
+      href="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/css/TableTools.css" />
+<link rel="stylesheet"
+      type="text/css"
       href="{{ STATIC_URL }}ddsc_management/main.css" />
 {% endblock css %}
 
 {% block map-javascript %}
+<script type="text/javascript">
+if (typeof lizard === 'undefined') {
+    var lizard = {};
+}
+lizard.static_url = '{{ STATIC_URL }}';
+</script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/bootstrap/dataTables.bootstrap.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/TableTools.min.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}ddsc_management/main.js"></script>
 {% endblock map-javascript %}
 
 {% block sidebar %}
 <ul>
-    <li>item</li>
+    <li>base</li>
 </ul>
 {% endblock %}
 
 {% block content %}
-<div>test</div>
+<div>base</div>
 {% endblock %}

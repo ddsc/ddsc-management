@@ -1,1 +1,26 @@
 {% extends "ddsc_management/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="add-source-form" class="dynamic-form">
+{% with form=view.form form_name=_('Add source') %}
+{% include 'ddsc_management/form.html' %}
+{% endwith %}
+</div>
+<div>
+<table cellpadding="0" cellspacing="0" border="0" class="data-table table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Rendering engine</th>
+            <th>Browser</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th>Rendering engine</th>
+            <th>Browser</th>
+        </tr>
+    </tfoot>
+</table>
+</div>
+{% endblock %}

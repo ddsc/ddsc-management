@@ -6,11 +6,23 @@ import logging
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.http import HttpResponse
+from django.utils import simplejson
+from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView
+from django.views.generic import View
 
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
 
+from ddsc_management import forms
+
 logger = logging.getLogger(__name__)
+
+class JsonView(View):
+    def get(self, request, *args, **kwargs):
+        data = self.get_json(request, *args, **kwargs)
+        serialized_data = simplejson.dumps(data)
+        return HttpResponse(serialized_data, content_type='application/json')
 
 class BaseView(UiView):
     @property
@@ -65,6 +77,83 @@ class BaseView(UiView):
             ),
         ]
 
+class ViewContextFormMixin(object):
+    """
+    (FormMixin)
+    A mixin that provides a way to show and handle a form in a request.
+
+    Combined with:
+
+    (ProcessFormView)
+    A mixin that processes a form on POST.
+    """
+
+    initial = {}
+    form_class = None
+    success_url = None
+
+    def get_initial(self):
+        """
+        Returns the initial data to use for forms on this view.
+        """
+        return self.initial.copy()
+
+    def get_form_class(self):
+        """
+        Returns the form class to use in this view
+        """
+        return self.form_class
+
+    def get_form(self, form_class):
+        """
+        Returns an instance of the form to be used in this view.
+        """
+        return form_class(**self.get_form_kwargs())
+
+    def get_form_kwargs(self):
+        """
+        Returns the keyword arguments for instanciating the form.
+        """
+        kwargs = {'initial': self.get_initial()}
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': self.request.POST,
+                'files': self.request.FILES,
+            })
+        return kwargs
+
+    def get_success_url(self):
+        if self.success_url:
+            url = self.success_url
+        else:
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
+        return url
+
+    def form_valid(self, form):
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+        return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+        if self.form.is_valid():
+            return self.form_valid(self.form)
+        else:
+            return self.form_invalid(self.form)
+
+    # PUT is a valid HTTP verb for creating (with a known URL) or editing an
+    # object, note that browsers only support POST for now.
+    def put(self, *args, **kwargs):
+        return self.post(*args, **kwargs)
+
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
     page_title = _('Summary')
@@ -81,9 +170,14 @@ class TimeseriesView(BaseView):
     template_name = 'ddsc_management/timeseries.html'
     page_title = _('Timeseries')
 
-class SourcesView(BaseView):
+class SourcesView(ViewContextFormMixin, BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Manage sources')
+    form_class = forms.SourceForm
+
+class ListSourcesView(JsonView):
+    def get_json(self, request, *args, **kwargs):
+        return {'table_data': [['a', 'b'], ['a2', 'b2']]}
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'
