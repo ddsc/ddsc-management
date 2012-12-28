@@ -1,0 +1,23 @@
+{% extends "lizard_ui/lizardbase.html" %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet"
+      type="text/css"
+      href="{{ STATIC_URL }}ddsc_management/main.css" />
+{% endblock css %}
+
+{% block map-javascript %}
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/main.js"></script>
+{% endblock map-javascript %}
+
+{% block sidebar %}
+<ul>
+    <li>item</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div>test</div>
+{% endblock %}

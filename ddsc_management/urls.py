@@ -12,15 +12,17 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^$', HomepageView.as_view()),
+    url(r'^$', views.SummaryView.as_view(), name='ddsc_management.summary'),
+
+    url(r'^alarms/', views.AlarmsView.as_view(), name='ddsc_management.alarms'),
+    url(r'^import/', views.ImportView.as_view(), name='ddsc_management.import'),
+    url(r'^timeseries/', views.TimeseriesView.as_view(), name='ddsc_management.timeseries'),
+    url(r'^sources/', views.SourcesView.as_view(), name='ddsc_management.sources'),
+    url(r'^locations/', views.LocationsView.as_view(), name='ddsc_management.locations'),
+    url(r'^access_groups/', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),
+
     url(r'^admin/', include(admin.site.urls)),
     url(r'^map/', include('lizard_map.urls')),
     url(r'^ui/', include('lizard_ui.urls')),
-    # url(r'^something/',
-    #     views.some_method,
-    #     name="name_it"),
-    # url(r'^something_else/$',
-    #     views.SomeClassBasedView.as_view(),
-    #     name='name_it_too'),
     )
 urlpatterns += debugmode_urlpatterns()
