@@ -13,7 +13,11 @@ from lizard_ui.layout import Action
 logger = logging.getLogger(__name__)
 
 class BaseView(UiView):
-    page_title = _('DDSC Management')
+    @property
+    def home_breadcrumb_element(self):
+        home = super(BaseView, self).home_breadcrumb_element
+        home.url = reverse('ddsc_management.summary')
+        return home
 
     def content_actions(self):
         return [
@@ -63,21 +67,28 @@ class BaseView(UiView):
 
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
+    page_title = _('Summary')
 
 class AlarmsView(BaseView):
     template_name = 'ddsc_management/alarms.html'
+    page_title = _('Alarms')
 
 class ImportView(BaseView):
     template_name = 'ddsc_management/import.html'
+    page_title = _('Import data')
 
 class TimeseriesView(BaseView):
     template_name = 'ddsc_management/timeseries.html'
+    page_title = _('Timeseries')
 
 class SourcesView(BaseView):
     template_name = 'ddsc_management/sources.html'
+    page_title = _('Manage sources')
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'
+    page_title = _('Manage locations')
 
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
+    page_title = _('Manage access groups')
