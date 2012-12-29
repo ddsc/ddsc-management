@@ -139,6 +139,8 @@ class ViewContextFormMixin(object):
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         self.form = self.get_form(form_class)
+        #x.label_tag()
+        #import pdb; pdb.set_trace()
         return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -177,7 +179,33 @@ class SourcesView(ViewContextFormMixin, BaseView):
 
 class ListSourcesView(JsonView):
     def get_json(self, request, *args, **kwargs):
-        return {'table_data': [['a', 'b'], ['a2', 'b2']]}
+        '''
+        sEcho=4
+        iColumns=2
+        sColumns=
+        iDisplayStart=0
+        iDisplayLength=10
+        mDataProp_0=0
+        mDataProp_1=1
+        sSearch=
+        bRegex=false
+        sSearch_0=
+        bRegex_0=false
+        bSearchable_0=true
+        sSearch_1=
+        bRegex_1=false
+        bSearchable_1=true
+        iSortCol_0=1
+        sSortDir_0=desc
+        iSortingCols=1
+        bSortable_0=true
+        bSortable_1=true
+        '''
+        return {
+            "iTotalRecords": "20",
+            "iTotalDisplayRecords": "2",
+            'aaData': [['a', 'b'], ['a2', 'b2']]
+        }
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'

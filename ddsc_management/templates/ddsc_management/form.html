@@ -1,14 +1,14 @@
 {% load i18n %}
 <div>
-    {% if form.errors %}
-        <div class="alert alert-block fade in">
-            <a class="close" data-dismiss="alert" href="#">×</a>
-            <p>{% blocktrans count form.errors.items|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
-        </div>
-    {% endif %}
-    <form method="post">{% csrf_token %}
+    <form method="post" class="form-horizontal">{% csrf_token %}
         <fieldset>
             <legend>{{ form_name|default:_('Form') }}</legend>
+            {% if form.errors %}
+                <div class="alert alert-block fade in">
+                    <a class="close" data-dismiss="alert" href="#">×</a>
+                    <p>{% blocktrans count form.errors.items|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+                </div>
+            {% endif %}
             <p>
                 {{ form_text|default:_('Please fill in the form below') }}
             </p>

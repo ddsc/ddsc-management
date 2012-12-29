@@ -1,0 +1,9 @@
+/* fix default datatables css floating this right */
+div.DTTT_container {
+    float: none;
+}
+
+.left-bordered {
+    padding-left: 10px;
+    border-left: 1px solid #eee;
+}

@@ -40,9 +40,10 @@ function init_dynamic_forms () {
 }
 
 function init_data_tables () {
+    $.fn.dataTableExt.oStdClasses["sFilter"] = "form-search pull-right";
     $('.data-table').each(function (idx) {
         $(this).dataTable({
-            "sDom": "<'row'<'span'T><'span pull-right'f>r>t<'row-fluid'<'span'i><'span pull-right'p>>",
+            "sDom": "<'row-fluid'<'span3'T><'span3'r><'span6 pull-right'f>t<'row-fluid'<'span6'i><'span6 pull-right'p>>",
             "oTableTools": {
                 "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
                 "aButtons": [
@@ -69,8 +70,30 @@ function init_data_tables () {
                 ]
             },
             "bProcessing": true,
+            "bServerSide": true,
             "sAjaxSource": '/api/sources/',
-            "sAjaxDataProp": "table_data"
+            //"sAjaxDataProp": "table_data"
+            "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                $.getJSON(
+                    sSource,
+                    aoData,
+                    function (response) {
+                        var aaData = [];
+                        $.each(response.aaData, function (index, row) {
+                            var aData = [];
+                            $.each(row, function (key, value) {
+                                aData.push(value);
+                            });
+                            aaData.push(aData);
+                        });
+                        fnCallback({
+                            'aaData': aaData,
+                            'iTotalRecords': response.iTotalRecords,
+                            'iTotalDisplayRecords': response.iTotalDisplayRecords
+                        });
+                    }
+                );
+            }
         });
     });
 }

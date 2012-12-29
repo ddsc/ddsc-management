@@ -3,8 +3,9 @@
     {% if input_type == "HiddenInput" %}
         {{ field }}
     {% else %}
-        <div class="clearfix">
-            {{ field.label_tag }}
+        <div class="control-group">
+            {# {{ field.label_tag }} #}
+            <label for="{{ field.id_for_label }}" class="control-label">{{ field.label }}</label>
             <div class="controls{% if field.errors %} control-group error{% endif %}">
                     {% if input_type == "CheckboxSelectMultiple" %}
                         {% include "ddsc_management/form_choices.html" with type="checkbox" %}
