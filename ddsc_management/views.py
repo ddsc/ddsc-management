@@ -8,17 +8,20 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils import simplejson
+from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView
 from django.views.generic import View
-
+from django.views.decorators.cache import never_cache
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
 
 from ddsc_management import forms
+from ddsc_management.utils import get_datatables_records
 
 logger = logging.getLogger(__name__)
 
 class JsonView(View):
+    @method_decorator(never_cache)
     def get(self, request, *args, **kwargs):
         data = self.get_json(request, *args, **kwargs)
         serialized_data = simplejson.dumps(data)
@@ -139,8 +142,6 @@ class ViewContextFormMixin(object):
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         self.form = self.get_form(form_class)
-        #x.label_tag()
-        #import pdb; pdb.set_trace()
         return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -179,33 +180,20 @@ class SourcesView(ViewContextFormMixin, BaseView):
 
 class ListSourcesView(JsonView):
     def get_json(self, request, *args, **kwargs):
-        '''
-        sEcho=4
-        iColumns=2
-        sColumns=
-        iDisplayStart=0
-        iDisplayLength=10
-        mDataProp_0=0
-        mDataProp_1=1
-        sSearch=
-        bRegex=false
-        sSearch_0=
-        bRegex_0=false
-        bSearchable_0=true
-        sSearch_1=
-        bRegex_1=false
-        bSearchable_1=true
-        iSortCol_0=1
-        sSortDir_0=desc
-        iSortingCols=1
-        bSortable_0=true
-        bSortable_1=true
-        '''
-        return {
-            "iTotalRecords": "20",
-            "iTotalDisplayRecords": "2",
-            'aaData': [['a', 'b'], ['a2', 'b2']]
-        }
+        # DEBUG since we don't have Sources yet, use a debug Model
+        from ddsc_management.models import Country
+        query_set = Country.objects.all()
+        if query_set.count() == 0:
+            for i in range(200):
+                c = Country()
+                c.name = 'name {}'.format(i)
+                c.formal_name = 'formal name {}'.format(i)
+                c.capital = 'capital {}'.format(i)
+                c.save()
+            query_set = Country.objects.all()
+        allowed_columns = ['name', 'formal_name']
+        # /DEBUG
+        return get_datatables_records(request, query_set, allowed_columns)
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'

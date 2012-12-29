@@ -40,9 +40,20 @@ function init_dynamic_forms () {
 }
 
 function init_data_tables () {
+    // change data tables to add .form-search etc to the filter form
     $.fn.dataTableExt.oStdClasses["sFilter"] = "form-search pull-right";
     $('.data-table').each(function (idx) {
-        $(this).dataTable({
+        var $el = $(this);
+        // allow passing options via data attributes on the element
+        var url = $el.data('url');
+        // Need to wrap because $.data won't recognize an attribute
+        // starting with [ as JSON.
+        var columns = $.parseJSON($el.data('columns'));
+        var extra_options = $el.data('options');
+        if (!extra_options) {
+            extra_options = {};
+        }
+        var default_options = {
             "sDom": "<'row-fluid'<'span3'T><'span3'r><'span6 pull-right'f>t<'row-fluid'<'span6'i><'span6 pull-right'p>>",
             "oTableTools": {
                 "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
@@ -71,13 +82,15 @@ function init_data_tables () {
             },
             "bProcessing": true,
             "bServerSide": true,
-            "sAjaxSource": '/api/sources/',
-            //"sAjaxDataProp": "table_data"
             "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
                 $.getJSON(
                     sSource,
                     aoData,
                     function (response) {
+                        fnCallback(response);
+                        // Example of how to parse data from a
+                        // custom JSON data source:
+                        /*
                         var aaData = [];
                         $.each(response.aaData, function (index, row) {
                             var aData = [];
@@ -91,10 +104,17 @@ function init_data_tables () {
                             'iTotalRecords': response.iTotalRecords,
                             'iTotalDisplayRecords': response.iTotalDisplayRecords
                         });
+                        */
                     }
                 );
             }
-        });
+        };
+        var url_options = {
+            "sAjaxSource": url,
+            "aoColumns": columns
+        };
+        var options = $.extend({}, default_options, url_options, extra_options);
+        $(this).dataTable(options);
     });
 }
 

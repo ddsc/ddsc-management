@@ -6,19 +6,24 @@
 <div class="row-fluid">
 <div class="span6">
     <legend>All available sources</legend>
-    <table cellpadding="0" cellspacing="0" border="0" class="data-table table table-striped table-bordered">
+    <table
+        cellpadding="0" cellspacing="0" border="0"
+        class="data-table table table-striped table-bordered"
+        data-url="/api/sources/"
+        data-columns='[
+            {
+                "sName": "name",
+                "sTitle": "Naam"
+            },
+            {
+                "sName": "formal_name",
+                "sTitle": "Formele naam"
+            }
+        ]'>
         <thead>
-            <tr>
-                <th>Rendering engine</th>
-                <th>Browser</th>
-            </tr>
         </thead>
         <tbody></tbody>
         <tfoot>
-            <tr>
-                <th>Rendering engine</th>
-                <th>Browser</th>
-            </tr>
         </tfoot>
     </table>
 </div>
