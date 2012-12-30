@@ -9,7 +9,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.utils import simplejson
 from django.utils.decorators import method_decorator
-from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView
+from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import View
 from django.views.decorators.cache import never_cache
 from lizard_ui.views import UiView
@@ -89,6 +90,9 @@ class ViewContextFormMixin(object):
 
     (ProcessFormView)
     A mixin that processes a form on POST.
+
+    And tuned to allow a custom GET method with its own
+    RequestContext handling.
     """
 
     initial = {}
@@ -157,6 +161,41 @@ class ViewContextFormMixin(object):
     def put(self, *args, **kwargs):
         return self.post(*args, **kwargs)
 
+class ViewContextModelFormMixin(ViewContextFormMixin):
+    """
+    A mixin that provides a way to show and handle a modelform in a request.
+    """
+
+    model = None
+    object = None
+
+    def get_object(self):
+        pk = self.request.GET.get('pk', None)
+        if pk is None:
+            return
+        return self.model.objects.get(pk=pk)
+
+    def get_initial(self):
+        """
+        Returns the initial data to use for forms on this view.
+        """
+        initial = super(ViewContextModelFormMixin, self).get_initial()
+        if self.object:
+            initial.update({'name': self.object.name})
+        return initial
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(ViewContextModelFormMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(ViewContextModelFormMixin, self).get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        #self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
     page_title = _('Summary')
@@ -178,6 +217,14 @@ class SourcesView(ViewContextFormMixin, BaseView):
     page_title = _('Manage sources')
     form_class = forms.SourceForm
 
+from ddsc_management.models import Country
+
+class EditSourcesView(ViewContextModelFormMixin, BaseView):
+    template_name = 'ddsc_management/sources.html'
+    page_title = _('Manage sources2')
+    form_class = forms.SourceForm
+    model = Country
+
 class ListSourcesView(JsonView):
     def get_json(self, request, *args, **kwargs):
         # DEBUG since we don't have Sources yet, use a debug Model
@@ -191,7 +238,7 @@ class ListSourcesView(JsonView):
                 c.capital = 'capital {}'.format(i)
                 c.save()
             query_set = Country.objects.all()
-        allowed_columns = ['name', 'formal_name']
+        allowed_columns = ['pk', 'name', 'formal_name']
         # /DEBUG
         return get_datatables_records(request, query_set, allowed_columns)
 

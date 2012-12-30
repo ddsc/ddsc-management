@@ -1,7 +1,15 @@
-/* fix default datatables css floating this right */
+/* fix default datatables css floating these right */
 div.DTTT_container {
     float: none;
 }
+div.dataTables_length {
+    float: right;
+}
+/*
+div.dataTables_paginate {
+    float: none;
+}
+*/
 
 .left-bordered {
     padding-left: 10px;

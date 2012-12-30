@@ -1,15 +1,26 @@
 from django.db.models import Q
 
+# Never return more then MAX_RECORDS records
+MAX_RECORDS = 10000
+
 def get_datatables_records(request, querySet, allowedColitems=[]):
     """
     Usage:
         querySet: query set to draw data from.
         allowedColitems: optional whitelist of field names allowed to be displayed.
     """
+    allowedColitems = list(allowedColitems)
+    if 'pk' not in allowedColitems:
+        # pk is always allowed
+        allowedColitems.append('pk')
+
     # Get the number of columns
     cols = int(request.GET.get('iColumns', 0))
     # Safety measure. If someone messes with iDisplayLength manually, we clip it to the max value of 100.
-    iDisplayLength =  min(int(request.GET.get('iDisplayLength', 10)), 100)
+    iDisplayLength =  min(int(request.GET.get('iDisplayLength', 10)), MAX_RECORDS)
+    if iDisplayLength == -1:
+        # Occurs for example in the print view of DataTables
+        iDisplayLength = MAX_RECORDS
     # Where the data starts from (page)
     startRecord = int(request.GET.get('iDisplayStart', 0))
     # Where the data ends (end of page)
@@ -21,6 +32,9 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
         colitems = querySet.model._meta.get_all_field_names()
     else:
         colitems = colitems.split(',')
+    # pk is always returned
+    if 'pk' not in colitems:
+        colitems.append('pk')
     # Filter colitems
     invalidColitems = set(colitems).difference(set(allowedColitems))
     # Just remove the disallowed columns, while maintaining the list order
@@ -88,7 +102,8 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
     sEcho = int(request.GET.get('sEcho', 0))
 
     aaData = []
-    a = querySet.values()
+    '''
+    a = querySet.values(*colitems)
     for row in a:
         rowkeys = row.keys()
         rowvalues = row.values()
@@ -98,6 +113,16 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
                 if val == colitems[col]:
                     rowlist.append(str(rowvalues[idx]))
         aaData.append(rowlist)
+    '''
+
+    a = querySet.values(*colitems)
+    for row in a:
+        rowkeys = row.keys()
+        rowvalues = row.values()
+        # Requested order of columns can be different than the
+        # order in the database, so match them up.
+        aaData.append([row[colname] for colname in colitems])
+
     response_dict = {}
     response_dict.update({'aaData': aaData})
     response_dict.update({

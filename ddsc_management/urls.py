@@ -18,6 +18,7 @@ urlpatterns = patterns(
     url(r'^import/', views.ImportView.as_view(), name='ddsc_management.import'),
     url(r'^timeseries/', views.TimeseriesView.as_view(), name='ddsc_management.timeseries'),
     url(r'^sources/', views.SourcesView.as_view(), name='ddsc_management.sources'),
+    url(r'^sources2/', views.EditSourcesView.as_view(), name='ddsc_management.sources2'),
     url(r'^api/sources/', views.ListSourcesView.as_view(), name='ddsc_management.list_sources'),
     url(r'^locations/', views.LocationsView.as_view(), name='ddsc_management.locations'),
     url(r'^access_groups/', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),

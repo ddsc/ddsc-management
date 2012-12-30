@@ -40,41 +40,83 @@ function init_dynamic_forms () {
 }
 
 function init_data_tables () {
-    // change data tables to add .form-search etc to the filter form
+    // change data tables to support Twitter Bootstrap styling
+    // add .form-search etc to the filter form
     $.fn.dataTableExt.oStdClasses["sFilter"] = "form-search pull-right";
+    TableTools.classes["buttons"]["normal"] = "btn";
+    TableTools.classes["buttons"]["disabled"] = "disabled";
+    //TableTools.classes["collection"]["container"] = "dropdown-menu";
+    TableTools.classes["select"]["row"] = "row-selected success";
+
     $('.data-table').each(function (idx) {
         var $el = $(this);
+        var $container = $el.parent();
         // allow passing options via data attributes on the element
         var url = $el.data('url');
         // Need to wrap because $.data won't recognize an attribute
         // starting with [ as JSON.
         var columns = $.parseJSON($el.data('columns'));
+        // always add the Primary Key column
+        columns.push({
+            "sName": "pk",
+            "bVisible": false
+        });
+        // allow some extra columns
         var extra_options = $el.data('options');
         if (!extra_options) {
             extra_options = {};
         }
         var default_options = {
-            "sDom": "<'row-fluid'<'span3'T><'span3'r><'span6 pull-right'f>t<'row-fluid'<'span6'i><'span6 pull-right'p>>",
+            "sDom": "<'row-fluid'<'span3'T><'span3'r><'span6 pull-right'f>t<'row-fluid'<'span6'i><'span6 pull-right'p>><'row-fluid'<'span6 pull-right'l>><'row-fluid custom-buttons'>",
+            "asStripeClasses": [],
             "oTableTools": {
+                "sRowSelect": "multi",
                 "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
+                "fnRowDeselected": function (nodes) {
+                    var $delete_btn = $container.find('.custom-buttons .delete-button');
+                    if ($delete_btn) {
+                        if (this.fnGetSelected().length == 0) {
+                            $delete_btn.attr("disabled", "disabled");
+                        }
+                    }
+                },
+                "fnRowSelected": function (nodes) {
+                    var $delete_btn = $container.find('.custom-buttons .delete-button');
+                    if ($delete_btn) {
+                        if (this.fnGetSelected().length != 0) {
+                            $delete_btn.removeAttr("disabled");
+                        }
+                    }
+                },
                 "aButtons": [
-                    "copy",
-                    "print",
+                    "select_all",
+                    "select_none",
                     {
                         "sExtends": "collection",
                         "sButtonText": 'Save <span class="caret" />',
                         "aButtons": [
                             {
+                                "sExtends": "copy",
+                                "sButtonText": "Copy to clipboard",
+                                "bSelectedOnly": true
+                            },
+                            {
+                                "sExtends": "print"
+                            },
+                            {
                                 "sExtends": "csv",
-                                "sFileName": "ddsc_export.csv"
+                                "sFileName": "ddsc_export.csv",
+                                "bSelectedOnly": true
                             },
                             {
                                 "sExtends": "xls",
-                                "sFileName": "ddsc_export.xls"
+                                "sFileName": "ddsc_export.xls",
+                                "bSelectedOnly": true
                             },
                             {
                                 "sExtends": "pdf",
-                                "sFileName": "ddsc_export.pdf"
+                                "sFileName": "ddsc_export.pdf",
+                                "bSelectedOnly": true
                             }
                         ]
                     }
@@ -114,7 +156,36 @@ function init_data_tables () {
             "aoColumns": columns
         };
         var options = $.extend({}, default_options, url_options, extra_options);
-        $(this).dataTable(options);
+        var data_table = $el.dataTable(options);
+        // datatables replaces the old <table> element, so remove the reference
+        delete $el;
+        // add our custom buttons
+        var $buttons = $container.find('.custom-buttons');
+        var $delete = $('<button class="btn btn-danger delete-button" disabled="disabled">Delete selected rows</button>');
+        $delete.click(function (event) {
+            // find out which column contains the PK
+            var columns = data_table.fnSettings()["aoColumns"];
+            var pk_column_index = -1;
+            $.each(columns, function (idx, col) {
+                if (col["sName"] == 'pk') {
+                    pk_column_index = idx;
+                }
+            });
+            // only continue if we found a PK
+            if (pk_column_index != -1) {
+                var selected = [];
+                data_table.$('tr.row-selected').each(function () {
+                    var row_data = data_table.fnGetData(this);
+                    selected.push(row_data[pk_column_index]);
+                });
+                // don't do anything if nothing is selected
+                if (selected.length > 0) {
+                    if (confirm("Are you sure you want to delete the row(s) with ID = " + selected + "?")) {
+                    }
+                }
+            }
+        });
+        $buttons.append($delete);
     });
 }
 
