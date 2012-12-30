@@ -6,7 +6,7 @@ import logging
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import simplejson
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
@@ -24,9 +24,50 @@ logger = logging.getLogger(__name__)
 class JsonView(View):
     @method_decorator(never_cache)
     def get(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            logger.warn('Request sent to JsonView does not seem to be Ajax')
         data = self.get_json(request, *args, **kwargs)
-        serialized_data = simplejson.dumps(data)
-        return HttpResponse(serialized_data, content_type='application/json')
+        if isinstance(data, HttpResponse):
+            return data
+        else:
+            serialized_data = simplejson.dumps(data)
+            return HttpResponse(serialized_data, content_type='application/json')
+
+    @method_decorator(never_cache)
+    def post(self, request, *args, **kwargs):
+        if not request.is_ajax():
+            logger.warn('Request sent to JsonView does not seem to be Ajax')
+        data = self.post_json(request, *args, **kwargs)
+        if isinstance(data, HttpResponse):
+            return data
+        else:
+            serialized_data = simplejson.dumps(data)
+            return HttpResponse(serialized_data, content_type='application/json')
+
+class DataSourceView(JsonView):
+    action = 'list'
+    request = None
+
+    def get_json(self, request, *args, **kwargs):
+        self.request = request
+        if self.action == 'list':
+            if not hasattr(self, 'list'):
+                return HttpResponseBadRequest('Action not implemented')
+            data = self.list()
+        else:
+            return HttpResponseBadRequest('Unknown action')
+        return data
+
+    def post_json(self, request, *args, **kwargs):
+        self.request = request
+        if self.action == 'delete':
+            if not hasattr(self, 'delete'):
+                return HttpResponseBadRequest('Action not implemented')
+            pks = request.POST.getlist('pks[]')
+            data = self.delete(pks)
+        else:
+            return HttpResponseBadRequest('Unknown action')
+        return data
 
 class BaseView(UiView):
     @property
@@ -225,22 +266,45 @@ class EditSourcesView(ViewContextModelFormMixin, BaseView):
     form_class = forms.SourceForm
     model = Country
 
-class ListSourcesView(JsonView):
-    def get_json(self, request, *args, **kwargs):
-        # DEBUG since we don't have Sources yet, use a debug Model
-        from ddsc_management.models import Country
-        query_set = Country.objects.all()
-        if query_set.count() == 0:
+class ModelDataSourceView(DataSourceView):
+    model = None
+    allowed_columns = []
+
+    def query_set(self):
+        return self.model.objects.all()
+
+    def list(self):
+        query_set = self.query_set()
+        return get_datatables_records(self.request, query_set, self.allowed_columns)
+
+    def delete(self, pks):
+        deleted = []
+        for pk in pks:
+            try:
+                c = self.query_set().filter(pk=pk)
+                c.delete()
+                deleted.append(unicode(c))
+            except Country.DoesNotExist:
+                logger.warn('Skipped deleting non-existing object with pk={}'.format(pk))
+        return {
+            'deleted': deleted
+        }
+
+class ListSourcesView(ModelDataSourceView):
+    model = Country
+    allowed_columns = ['pk', 'name', 'formal_name']
+
+    def list(self):
+        # DEBUG create a few objects if none exist
+        if self.query_set().count() == 0:
             for i in range(200):
                 c = Country()
                 c.name = 'name {}'.format(i)
                 c.formal_name = 'formal name {}'.format(i)
                 c.capital = 'capital {}'.format(i)
                 c.save()
-            query_set = Country.objects.all()
-        allowed_columns = ['pk', 'name', 'formal_name']
         # /DEBUG
-        return get_datatables_records(request, query_set, allowed_columns)
+        return super(ListSourcesView, self).list()
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'

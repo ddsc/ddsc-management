@@ -9,7 +9,8 @@
     <table
         cellpadding="0" cellspacing="0" border="0"
         class="data-table table table-striped table-bordered"
-        data-url="/api/sources/"
+        data-url="{% url ddsc_management.api.list_sources %}"
+        data-delete-url="{% url ddsc_management.api.delete_sources %}"
         data-columns='[
             {
                 "sName": "pk",

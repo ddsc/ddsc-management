@@ -39,6 +39,79 @@ function init_dynamic_forms () {
     });
 }
 
+function add_custom_buttons ($container, data_table, delete_url) {
+    if (delete_url) {
+        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled">Delete selected rows</button>');
+        $delete.click(function (event) {
+            // find out which column contains the PK
+            var columns = data_table.fnSettings()["aoColumns"];
+            var pk_column_index = -1;
+            $.each(columns, function (idx, col) {
+                if (col["sName"] == 'pk') {
+                    pk_column_index = idx;
+                }
+            });
+            // only continue if we found a PK
+            if (pk_column_index != -1) {
+                var selected = [];
+                data_table.$('tr.row-selected').each(function () {
+                    var row_data = data_table.fnGetData(this);
+                    selected.push(row_data[pk_column_index]);
+                });
+                // don't do anything if nothing is selected
+                if (selected.length > 0) {
+                    show_confirm_modal(
+                        "Are you sure?",
+                        "Are you sure you want to delete the row(s) with ID = " + selected + "?",
+                        function () {
+                            $.post(
+                                delete_url,
+                                {
+                                    pks: selected
+                                }
+                            )
+                            .success(function (data, textStatus, jqXHR) {
+                                data_table.fnReloadAjax();
+                            })
+                            .error(function (data, textStatus, jqXHR) {
+                                alert('Error while deleting row(s): ' + data.status + ' ' + data.statusText);
+                            });
+                        }
+                    )
+                }
+            }
+        });
+        $container.append($delete);
+    }
+}
+
+function data_tables_fnServerData (sSource, aoData, fnCallback, oSettings) {
+    $.getJSON(
+        sSource,
+        aoData,
+        function (response) {
+            fnCallback(response);
+            // Example of how to parse data from a
+            // custom JSON data source:
+            /*
+            var aaData = [];
+            $.each(response.aaData, function (index, row) {
+                var aData = [];
+                $.each(row, function (key, value) {
+                    aData.push(value);
+                });
+                aaData.push(aData);
+            });
+            fnCallback({
+                'aaData': aaData,
+                'iTotalRecords': response.iTotalRecords,
+                'iTotalDisplayRecords': response.iTotalDisplayRecords
+            });
+            */
+        }
+    );
+}
+
 function init_data_tables () {
     // change data tables to support Twitter Bootstrap styling
     // add .form-search etc to the filter form
@@ -53,15 +126,16 @@ function init_data_tables () {
         var $container = $el.parent();
         // allow passing options via data attributes on the element
         var url = $el.data('url');
-        // Need to wrap because $.data won't recognize an attribute
-        // starting with [ as JSON.
+        var delete_url = $el.data('delete-url');
+        // Note: need to wrap arrays because $.data won't recognize
+        // an attribute starting with [ as valid JSON.
         var columns = $.parseJSON($el.data('columns'));
         // always add the Primary Key column
         columns.push({
             "sName": "pk",
             "bVisible": false
         });
-        // allow some extra columns
+        // allow passing any extra options, overriding the defaults below
         var extra_options = $el.data('options');
         if (!extra_options) {
             extra_options = {};
@@ -73,20 +147,24 @@ function init_data_tables () {
                 "sRowSelect": "multi",
                 "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
                 "fnRowDeselected": function (nodes) {
-                    var $delete_btn = $container.find('.custom-buttons .delete-button');
-                    if ($delete_btn) {
-                        if (this.fnGetSelected().length == 0) {
-                            $delete_btn.attr("disabled", "disabled");
+                    // disable any buttons operating on selected rows here
+                    var $btns = $container.find('.custom-buttons .selection-only');
+                    var self = this;
+                    $.each($btns, function (idx) {
+                        if (self.fnGetSelected().length == 0) {
+                            $(this).attr("disabled", "disabled");
                         }
-                    }
+                    });
                 },
                 "fnRowSelected": function (nodes) {
-                    var $delete_btn = $container.find('.custom-buttons .delete-button');
-                    if ($delete_btn) {
-                        if (this.fnGetSelected().length != 0) {
-                            $delete_btn.removeAttr("disabled");
+                    // enable any buttons operating on selected rows here
+                    var $btns = $container.find('.custom-buttons .selection-only');
+                    var self = this;
+                    $.each($btns, function (idx) {
+                        if (self.fnGetSelected().length != 0) {
+                            $(this).removeAttr("disabled");
                         }
-                    }
+                    });
                 },
                 "aButtons": [
                     "select_all",
@@ -124,73 +202,53 @@ function init_data_tables () {
             },
             "bProcessing": true,
             "bServerSide": true,
-            "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
-                $.getJSON(
-                    sSource,
-                    aoData,
-                    function (response) {
-                        fnCallback(response);
-                        // Example of how to parse data from a
-                        // custom JSON data source:
-                        /*
-                        var aaData = [];
-                        $.each(response.aaData, function (index, row) {
-                            var aData = [];
-                            $.each(row, function (key, value) {
-                                aData.push(value);
-                            });
-                            aaData.push(aData);
-                        });
-                        fnCallback({
-                            'aaData': aaData,
-                            'iTotalRecords': response.iTotalRecords,
-                            'iTotalDisplayRecords': response.iTotalDisplayRecords
-                        });
-                        */
-                    }
-                );
-            }
+            "fnServerData": data_tables_fnServerData
         };
-        var url_options = {
+        var required_options = {
             "sAjaxSource": url,
             "aoColumns": columns
         };
-        var options = $.extend({}, default_options, url_options, extra_options);
+        var options = $.extend({}, default_options, required_options, extra_options);
         var data_table = $el.dataTable(options);
-        // datatables replaces the old <table> element, so remove the reference
+        // datatables replaces the old <table> element, so remove the
+        // reference
         delete $el;
         // add our custom buttons
+        // .custom-buttons element as defined in the sDom option
         var $buttons = $container.find('.custom-buttons');
-        var $delete = $('<button class="btn btn-danger delete-button" disabled="disabled">Delete selected rows</button>');
-        $delete.click(function (event) {
-            // find out which column contains the PK
-            var columns = data_table.fnSettings()["aoColumns"];
-            var pk_column_index = -1;
-            $.each(columns, function (idx, col) {
-                if (col["sName"] == 'pk') {
-                    pk_column_index = idx;
-                }
-            });
-            // only continue if we found a PK
-            if (pk_column_index != -1) {
-                var selected = [];
-                data_table.$('tr.row-selected').each(function () {
-                    var row_data = data_table.fnGetData(this);
-                    selected.push(row_data[pk_column_index]);
-                });
-                // don't do anything if nothing is selected
-                if (selected.length > 0) {
-                    if (confirm("Are you sure you want to delete the row(s) with ID = " + selected + "?")) {
-                    }
-                }
-            }
-        });
-        $buttons.append($delete);
+        add_custom_buttons($buttons, data_table, delete_url);
+    });
+}
+
+function show_confirm_modal (header, message, confirm_callback) {
+    var $modal = $('#confirm-modal');
+    $modal.find('.modal-header-label').html(header);
+    $modal.find('.modal-body p').html(message);
+    $modal.data('confirm_callback', confirm_callback);
+    $modal.modal('show');
+}
+
+function init_confirm_modal () {
+    var $container = $('<div>');
+    var template_html = $('#confirm-modal-template').html();
+    $container.html(template_html);
+    $container.appendTo($('body'));
+    var $modal = $container.find('.modal');
+    $modal.find('.modal-confirm').click(function (event) {
+        var callback = $modal.data('confirm_callback');
+        if (typeof callback !== 'undefined') {
+            callback(event);
+        }
+        $modal.modal('hide');
+    });
+    $modal.modal({
+        show: false
     });
 }
 
 $(document).ready(function () {
     init_dynamic_forms();
     init_data_tables();
+    init_confirm_modal();
 });
 }(this));
