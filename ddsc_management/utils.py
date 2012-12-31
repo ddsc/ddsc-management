@@ -1,9 +1,10 @@
+from django.core.urlresolvers import reverse
 from django.db.models import Q
 
 # Never return more then MAX_RECORDS records
 MAX_RECORDS = 10000
 
-def get_datatables_records(request, querySet, allowedColitems=[]):
+def get_datatables_records(request, querySet, allowedColitems=[], details_view_name=None):
     """
     Usage:
         querySet: query set to draw data from.
@@ -13,9 +14,10 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
     if 'pk' not in allowedColitems:
         # pk is always allowed
         allowedColitems.append('pk')
+    if 'details_url' not in allowedColitems:
+        # details_url is always allowed
+        allowedColitems.append('details_url')
 
-    # Get the number of columns
-    cols = int(request.GET.get('iColumns', 0))
     # Safety measure. If someone messes with iDisplayLength manually, we clip it to the max value of 100.
     iDisplayLength =  min(int(request.GET.get('iDisplayLength', 10)), MAX_RECORDS)
     if iDisplayLength == -1:
@@ -27,23 +29,41 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
     endRecord = startRecord + iDisplayLength
 
     # Parse sColumns
-    colitems = request.GET.get('sColumns')
+    colitems = request.GET.get('sColumns', None)
     if not colitems:
+        # return all data
         colitems = querySet.model._meta.get_all_field_names()
     else:
         colitems = colitems.split(',')
+
     # pk is always returned
     if 'pk' not in colitems:
         colitems.append('pk')
+
     # Filter colitems
     invalidColitems = set(colitems).difference(set(allowedColitems))
     # Just remove the disallowed columns, while maintaining the list order
     for col in invalidColitems:
         colitems.remove(col)
+
+    dbColitems = list(colitems)
+
+    # details_url is not a DB column
+    if 'details_url' in dbColitems:
+        dbColitems.remove('details_url')
+
+    # details_url is only returned when details_view_name is defined
+    if 'details_url' in colitems and details_view_name is None:
+        colitems.remove('details_url')
+
     # Helper dict
-    columnIndexNameMap = dict([(i, colitems[i]) for i in range(len(colitems))])
+    # Note: should contain other colitems as well?
+    columnIndexNameMap = dict(enumerate(dbColitems))
     # Pass resulting sColumns
     sColumns = ",".join(map(str, colitems))
+    # Get the number of columns
+    #cols = int(request.GET.get('iColumns', 0))
+    cols = len(dbColitems)
 
     # Ordering data
     iSortingCols = int(request.GET.get('iSortingCols', 0))
@@ -101,27 +121,19 @@ def get_datatables_records(request, querySet, allowedColitems=[]):
     # Required echo response
     sEcho = int(request.GET.get('sEcho', 0))
 
+    # Actually add the data
     aaData = []
-    '''
-    a = querySet.values(*colitems)
-    for row in a:
-        rowkeys = row.keys()
-        rowvalues = row.values()
-        rowlist = []
-        for col in range(0, len(colitems)):
-            for idx, val in enumerate(rowkeys):
-                if val == colitems[col]:
-                    rowlist.append(str(rowvalues[idx]))
-        aaData.append(rowlist)
-    '''
-
-    a = querySet.values(*colitems)
+    a = querySet.values(*dbColitems)
     for row in a:
         rowkeys = row.keys()
         rowvalues = row.values()
         # Requested order of columns can be different than the
         # order in the database, so match them up.
-        aaData.append([row[colname] for colname in colitems])
+        rowdata = [row[colname] for colname in dbColitems]
+        if 'details_url' in colitems and details_view_name is not None:
+            idx = colitems.index('details_url')
+            rowdata.insert(idx, reverse(details_view_name, kwargs={'pk': row['pk']}))
+        aaData.append(rowdata)
 
     response_dict = {}
     response_dict.update({'aaData': aaData})

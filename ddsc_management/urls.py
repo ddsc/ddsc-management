@@ -18,10 +18,19 @@ urlpatterns = patterns(
     url(r'^import/$', views.ImportView.as_view(), name='ddsc_management.import'),
     url(r'^timeseries/$', views.TimeseriesView.as_view(), name='ddsc_management.timeseries'),
 
-    url(r'^sources/$', views.SourcesView.as_view(), name='ddsc_management.sources'),
-    url(r'^sources/(?P<pk>\d+)/edit/$', views.EditSourcesView.as_view(), name='ddsc_management.edit_source'),
-    url(r'^api/sources/$',        views.ListSourcesView.as_view(),                name='ddsc_management.api.list_sources'),
-    url(r'^api/sources/delete/$', views.ListSourcesView.as_view(action='delete'), name='ddsc_management.api.delete_sources'),
+    url(r'^sources/$',
+        views.SourcesView.as_view(action='list'),   name='ddsc_management.sources.list'),
+    url(r'^sources/add/$',
+        views.SourcesView.as_view(action='add'),    name='ddsc_management.sources.add'),
+    url(r'^sources/(?P<pk>\d+)/$',
+        views.SourcesView.as_view(action='detail'), name='ddsc_management.sources.detail'),
+    url(r'^sources/(?P<pk>\d+)/edit/$',
+        views.SourcesView.as_view(action='edit'),   name='ddsc_management.sources.edit'),
+
+    url(r'^api/sources/$',
+        views.SourcesApiView.as_view(action='list'),   name='ddsc_management.api.list_sources'),
+    url(r'^api/sources/delete/$',
+        views.SourcesApiView.as_view(action='delete'), name='ddsc_management.api.delete_sources'),
 
     url(r'^locations/$', views.LocationsView.as_view(), name='ddsc_management.locations'),
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),

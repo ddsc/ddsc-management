@@ -21,11 +21,13 @@ if (typeof lizard === 'undefined') {
 lizard.static_url = '{{ STATIC_URL }}';
 </script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/jquery.dataTables.min.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/jquery.dataTables.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/bootstrap/dataTables.bootstrap.js"></script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/TableTools.min.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/ZeroClipboard.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/TableTools.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/fnReloadAjax.js"></script>
 <script type="text/javascript"
@@ -53,6 +55,8 @@ lizard.static_url = '{{ STATIC_URL }}';
 </ul>
 {% endblock %}
 
+{# block main-area #}
 {% block content %}
 <div>base</div>
 {% endblock %}
+{# endblock #}

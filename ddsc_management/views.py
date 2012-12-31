@@ -13,6 +13,7 @@ from django.views.generic.edit import FormMixin, FormView, ProcessFormView, Base
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import View
 from django.views.decorators.cache import never_cache
+
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
 
@@ -69,56 +70,89 @@ class DataSourceView(JsonView):
             return HttpResponseBadRequest('Unknown action')
         return data
 
+class ModelDataSourceView(DataSourceView):
+    model = None
+    allowed_columns = []
+    details_view_name = None
+
+    def query_set(self):
+        return self.model.objects.all()
+
+    def list(self):
+        query_set = self.query_set()
+        return get_datatables_records(self.request, query_set, self.allowed_columns, self.details_view_name)
+
+    def delete(self, pks):
+        deleted = []
+        for pk in pks:
+            try:
+                c = self.query_set().filter(pk=pk).get()
+                # first grab some information
+                deleted.append({
+                    'pk': c.pk,
+                    'message': unicode(c)
+                })
+                # then delete it
+                c.delete()
+            except self.model.DoesNotExist:
+                logger.warn('Skipped deleting non-existing object with pk={}'.format(pk))
+        return {
+            'deleted': deleted
+        }
+
 class BaseView(UiView):
+    action = None
+
     @property
     def home_breadcrumb_element(self):
         home = super(BaseView, self).home_breadcrumb_element
         home.url = reverse('ddsc_management.summary')
         return home
 
+    @property
     def content_actions(self):
         return [
             Action(
                 name=_('Summary'),
                 description=_('View summarized infomation.'),
                 url=reverse('ddsc_management.summary'),
-                icon='icon-edit'
+                icon=''
             ),
             Action(
                 name=_('Alarms'),
                 description=_('Manage alarms.'),
                 url=reverse('ddsc_management.alarms'),
-                icon='icon-edit'
+                icon=''
             ),
             Action(
                 name=_('Import data'),
                 description=_('Manually import data from csv files.'),
                 url=reverse('ddsc_management.import'),
-                icon='icon-edit'
+                icon=''
             ),
             Action(
                 name=_('Timeseries'),
                 description=_('Manage timeseries.'),
                 url=reverse('ddsc_management.timeseries'),
-                icon='icon-edit'
+                icon=''
             ),
             Action(
                 name=_('Manage sources'),
                 description=_('Manage sources.'),
-                url=reverse('ddsc_management.sources'),
-                icon='icon-edit'
+                url=reverse('ddsc_management.sources.list'),
+                icon=''
             ),
             Action(
                 name=_('Manage locations'),
                 description=_('Manage locations.'),
                 url=reverse('ddsc_management.locations'),
-                icon='icon-edit'
+                icon=''
             ),
             Action(
                 name=_('Manage access groups'),
                 description=_('Manage who has access to your data.'),
                 url=reverse('ddsc_management.access_groups'),
-                icon='icon-edit'
+                icon=''
             ),
         ]
 
@@ -183,11 +217,18 @@ class ViewContextFormMixin(object):
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
+'''
+    def init(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+        #return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
+'''
 
+class BaseFormView(ViewContextFormMixin, BaseView):
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         self.form = self.get_form(form_class)
-        return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
+        return super(BaseFormView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
@@ -202,40 +243,47 @@ class ViewContextFormMixin(object):
     def put(self, *args, **kwargs):
         return self.post(*args, **kwargs)
 
-class ViewContextModelFormMixin(ViewContextFormMixin):
+class MySingleObjectMixin(object):
     """
     A mixin that provides a way to show and handle a modelform in a request.
     """
 
+    pk = None
     model = None
     object = None
 
     def get_object(self):
-        pk = self.request.GET.get('pk', None)
-        if pk is None:
+        if self.pk is None:
             return
-        return self.model.objects.get(pk=pk)
+        return self.model.objects.get(pk=self.pk)
 
     def get_initial(self):
         """
         Returns the initial data to use for forms on this view.
         """
-        initial = super(ViewContextModelFormMixin, self).get_initial()
+        initial = super(MySingleObjectMixin, self).get_initial()
         if self.object:
             initial.update({'name': self.object.name})
         return initial
 
-    def get(self, request, *args, **kwargs):
+    def init(self, request, *args, **kwargs):
+        self.pk = kwargs.get('pk', None)
         self.object = self.get_object()
-        return super(ViewContextModelFormMixin, self).get(request, *args, **kwargs)
+        #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
+    '''
+    def get(self, request, *args, **kwargs):
+        self.pk = kwargs.get('pk', None)
+        self.object = self.get_object()
+        #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        self.pk = kwargs.get('pk', None)
         self.object = self.get_object()
-        return super(ViewContextModelFormMixin, self).get(request, *args, **kwargs)
+        #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        #self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+    '''
 
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
@@ -253,58 +301,50 @@ class TimeseriesView(BaseView):
     template_name = 'ddsc_management/timeseries.html'
     page_title = _('Timeseries')
 
-class SourcesView(ViewContextFormMixin, BaseView):
+from ddsc_management.models import Country
+
+class SourcesView(MySingleObjectMixin, BaseFormView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Manage sources')
     form_class = forms.SourceForm
-
-from ddsc_management.models import Country
-
-class EditSourcesView(ViewContextModelFormMixin, BaseView):
-    template_name = 'ddsc_management/sources.html'
-    page_title = _('Manage sources2')
-    form_class = forms.SourceForm
     model = Country
 
-class ModelDataSourceView(DataSourceView):
-    model = None
-    allowed_columns = []
+    def form_valid(self, form):
+        if self.object is not None:
+            object = self.object
+        else:
+            object = Country()
+        object.name = form.data['name']
+        object.save()
 
-    def query_set(self):
-        return self.model.objects.all()
+    def get(self, request, *args, **kwargs):
+        MySingleObjectMixin.init(self, request, *args, **kwargs)
+        #ViewContextFormMixin.init(self, request, *args, **kwargs)
+        #return super(SourcesView, self).get(request, *args, **kwargs)
+        return BaseFormView.get(self, request, *args, **kwargs)
 
-    def list(self):
-        query_set = self.query_set()
-        return get_datatables_records(self.request, query_set, self.allowed_columns)
+    def post(self, request, *args, **kwargs):
+        MySingleObjectMixin.init(self, request, *args, **kwargs)
+        #ViewContextFormMixin.init(self, request, *args, **kwargs)
+        #return super(SourcesView, self).post(request, *args, **kwargs)
+        return BaseFormView.post(self, request, *args, **kwargs)
 
-    def delete(self, pks):
-        deleted = []
-        for pk in pks:
-            try:
-                c = self.query_set().filter(pk=pk)
-                c.delete()
-                deleted.append(unicode(c))
-            except Country.DoesNotExist:
-                logger.warn('Skipped deleting non-existing object with pk={}'.format(pk))
-        return {
-            'deleted': deleted
-        }
-
-class ListSourcesView(ModelDataSourceView):
+class SourcesApiView(ModelDataSourceView):
     model = Country
-    allowed_columns = ['pk', 'name', 'formal_name']
+    allowed_columns = ['name', 'formal_name']
+    details_view_name = 'ddsc_management.sources.detail'
 
     def list(self):
         # DEBUG create a few objects if none exist
         if self.query_set().count() == 0:
             for i in range(200):
                 c = Country()
-                c.name = 'name {}'.format(i)
-                c.formal_name = 'formal name {}'.format(i)
-                c.capital = 'capital {}'.format(i)
+                c.name = 'name {:03d}'.format(i)
+                c.formal_name = 'formal name {:03d}'.format(i)
+                c.capital = 'capital {:03d}'.format(i)
                 c.save()
         # /DEBUG
-        return super(ListSourcesView, self).list()
+        return super(SourcesApiView, self).list()
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'

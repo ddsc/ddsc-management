@@ -8,21 +8,17 @@
     <legend>All available sources</legend>
     <table
         cellpadding="0" cellspacing="0" border="0"
-        class="data-table table table-striped table-bordered"
+        class="data-table table table-bordered table-hover"
         data-url="{% url ddsc_management.api.list_sources %}"
         data-delete-url="{% url ddsc_management.api.delete_sources %}"
         data-columns='[
             {
-                "sName": "pk",
-                "bVisible": false
-            },
-            {
                 "sName": "name",
-                "sTitle": "Naam"
+                "sTitle": "{% trans 'Name' %}"
             },
             {
                 "sName": "formal_name",
-                "sTitle": "Formele naam"
+                "sTitle": "{% trans 'Formal name' %}"
             }
         ]'>
         <thead>
@@ -31,12 +27,46 @@
         <tfoot>
         </tfoot>
     </table>
+    <div>
+        <a href="{% url ddsc_management.sources.add %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-plus"></i> Add a new source</a>
+    </div>
 </div>
-<div class="left-bordered span3">
-    <div id="add-source-form" class="dynamic-form">
-    {% with form=view.form form_name=_('Add source') %}
-    {% include 'ddsc_management/form.html' %}
-    {% endwith %}
+<div id="detail-view" class="span6">
+    <div class="row">
+        {% if view.action == 'detail' %}
+            <h2>{{ view.object.name }}</h2>
+            <p>{{ view.object.formal_name }}</p>
+        {% elif view.action == 'add' %}
+            <div id="add-source-form" class="dynamic-form" data-target="add-source-form">
+                {% url ddsc_management.sources.add as action %}
+                {% with form=view.form form_header=_('Add source') action=action %}
+                {% include 'ddsc_management/form.html' %}
+                {% endwith %}
+            </div>
+        {% elif view.action == 'edit' %}
+            <div id="edit-source-form" class="dynamic-form" data-target="edit-source-form">
+                {% url ddsc_management.sources.edit pk=40 as action %}
+                {% with form=view.form form_header=_('Edit source') action=action %}
+                {% include 'ddsc_management/form.html' %}
+                {% endwith %}
+            </div>
+        {% elif view.action == 'list' %}
+            <p>No item selected.</p>
+        {% endif %}
+    </div>
+    {% if view.action == 'detail' %}
+    <div class="row">
+        <div class="span12">
+            <a href="{% url ddsc_management.sources.edit pk=view.pk %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-edit"></i> Edit</a>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="span12">
+            {% if view.action == 'add' or view.action == 'edit' %}
+                <a href="{% url ddsc_management.sources.list %}" class="btn btn-warning dynamic-link" data-target="detail-view"><i class="icon-ban-circle"></i> Cancel</a>
+            {% endif %}
+        </div>
     </div>
 </div>
 </div>

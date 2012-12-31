@@ -1,47 +1,134 @@
 (function (global) {
-function init_dynamic_form ($el) {
-    var id = $el.attr('id');
-    if (id) {
-        var $submit = $el.find('input[type=submit], button[type=submit]');
-        $submit.click(function (event) {
+
+$.fn.dynamic_get = function (url) {
+    var target = $(this).attr('id');
+    if (!target) {
+        console.error(
+            'No id set, so can not properly determine target element.'
+        );
+        return;
+    }
+    $.get(
+        url
+    )
+    .success(function (data) {
+        var $new_el = $(data).find('#' + target);
+        var $old_el = $('#' + target);
+        // Replace the old element containing the data with the
+        // new one.
+        // .replaceWith() internally calls .remove(), which
+        // should properly unbind all event handlers.
+        $old_el.replaceWith($new_el);
+    })
+    .error(function (data) {
+        // enforce a screen refresh
+        window.location = url
+    });
+};
+
+function init_dynamic_links () {
+    $(document).on("click",
+        "a.dynamic-link",
+        function (event) {
+            var $el = $(this);
+            var target = $el.data('target');
+            if (!target) {
+                return;
+            }
+            event.stopPropagation();
             event.preventDefault();
+            var url = $el.attr('href');
+            $.get(
+                url
+            )
+            .success(function (data) {
+                var $new_el = $(data).find('#' + target);
+                var $old_el = $('#' + target);
+                // Replace the old element containing the data with the
+                // new one.
+                // .replaceWith() internally calls .remove(), which
+                // should properly unbind all event handlers.
+                $old_el.replaceWith($new_el);
+            })
+            .error(function (data) {
+                // enforce a screen refresh
+                window.location = url
+            });
+        }
+    );
+}
+
+// function init_dynamic_form ($el) {
+    // var id = $el.attr('id');
+    // if (id) {
+        // var $submit = $el.find('input[type=submit], button[type=submit]');
+        // $submit.click(function (event) {
+            // event.preventDefault();
+            // var $form = $el.find('form');
+            // $.post(
+                // $form.attr('action'),
+                // $form.serialize()
+            // )
+            // .success(function (data) {
+                // var $new_el = $(data).find('#' + id);
+                // // Replace the old element containing the form with the
+                // // new one.
+                // // .replaceWith() internally calls .remove(), which
+                // // should properly unbind all event handlers.
+                // $el.replaceWith($new_el);
+                // // rebind this event handler again
+                // init_dynamic_form($new_el);
+            // })
+            // .error(function (data) {
+                // $el.replaceWith('<div>Error while submitting form.</div>');
+            // });
+        // });
+    // }
+    // else {
+        // console.error(
+            // 'Encountered a form which has ".dynamic-form" set, but no ' +
+            // 'unique "id" attribute: this form can not be made dynamic.'
+        // );
+    // }
+// }
+// $('.dynamic-form').each(function (idx) {
+    // init_dynamic_form($(this));
+// });
+
+function init_dynamic_forms () {
+    $(document).on("click",
+        ".dynamic-form input[type=submit], button[type=submit]",
+        function (event) {
+            event.preventDefault();
+            var $el = $(this).parents('.dynamic-form');
+            var target = $el.data('target');
+            if (!target) {
+                return;
+            }
             var $form = $el.find('form');
             $.post(
                 $form.attr('action'),
                 $form.serialize()
             )
             .success(function (data) {
-                var $new_el = $(data).find('#' + id);
+                var $new_el = $(data).find('#' + target);
+                var $old_el = $('#' + target);
                 // Replace the old element containing the form with the
                 // new one.
                 // .replaceWith() internally calls .remove(), which
                 // should properly unbind all event handlers.
-                $el.replaceWith($new_el);
-                // rebind this event handler again
-                init_dynamic_form($new_el);
+                $old_el.replaceWith($new_el);
             })
             .error(function (data) {
                 $el.replaceWith('<div>Error while submitting form.</div>');
             });
-        });
-    }
-    else {
-        console.error(
-            'Encountered a form which has ".dynamic-form" set, but no ' +
-            'unique "id" attribute: this form can not be made dynamic.'
-        );
-    }
-}
-
-function init_dynamic_forms () {
-    $('.dynamic-form').each(function (idx) {
-        init_dynamic_form($(this));
-    });
+        }
+    );
 }
 
 function add_custom_buttons ($container, data_table, delete_url) {
     if (delete_url) {
-        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled">Delete selected rows</button>');
+        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled"><i class="icon-trash"></i> Delete selected rows</button>');
         $delete.click(function (event) {
             // find out which column contains the PK
             var columns = data_table.fnSettings()["aoColumns"];
@@ -54,9 +141,10 @@ function add_custom_buttons ($container, data_table, delete_url) {
             // only continue if we found a PK
             if (pk_column_index != -1) {
                 var selected = [];
-                data_table.$('tr.row-selected').each(function () {
-                    var row_data = data_table.fnGetData(this);
-                    selected.push(row_data[pk_column_index]);
+                var oTT = TableTools.fnGetInstance(data_table.get()[0]);
+                var selected_data = oTT.fnGetSelectedData();
+                $.each(selected_data, function (idx) {
+                    selected.push(this[pk_column_index]);
                 });
                 // don't do anything if nothing is selected
                 if (selected.length > 0) {
@@ -72,17 +160,45 @@ function add_custom_buttons ($container, data_table, delete_url) {
                             )
                             .success(function (data, textStatus, jqXHR) {
                                 data_table.fnReloadAjax();
+                                // would be nicer if we can retain the selected page here
+                                // $.each(data.deleted, function (idx) {
+                                    // var pk = this.pk;
+                                    // alert(pk);
+                                    // //data_table.fnDeleteRow();
+                                // });
                             })
                             .error(function (data, textStatus, jqXHR) {
                                 alert('Error while deleting row(s): ' + data.status + ' ' + data.statusText);
                             });
                         }
-                    )
+                    );
                 }
             }
         });
-        $container.append($delete);
+        $('<div class="span3"/>')
+            .wrapInner($delete)
+            .appendTo($container);
     }
+}
+
+function add_edit_buttons ($container, data_table) {
+    var $edit = $('<button class="btn"><i class="icon-edit"></i> Edit</button>');
+    $edit.click(function (event) {
+    });
+    var $row_buttons = $('<div class="row-buttons" />');
+    $row_buttons.css({
+        position: 'absolute'
+    });
+    $row_buttons.hide();
+    $row_buttons.append($edit);
+    $container.append($row_buttons);
+}
+
+function fix_selection_on_page_change (data_table) {
+    data_table.on('page', function (event) {
+        var oTT = TableTools.fnGetInstance(data_table.get()[0]);
+        oTT.fnSelectNone();
+    });
 }
 
 function data_tables_fnServerData (sSource, aoData, fnCallback, oSettings) {
@@ -118,12 +234,15 @@ function init_data_tables () {
     $.fn.dataTableExt.oStdClasses["sFilter"] = "form-search pull-right";
     TableTools.classes["buttons"]["normal"] = "btn";
     TableTools.classes["buttons"]["disabled"] = "disabled";
-    //TableTools.classes["collection"]["container"] = "dropdown-menu";
     TableTools.classes["select"]["row"] = "row-selected success";
+    TableTools.classes["container"] = "DTTT_container btn-group";
 
     $('.data-table').each(function (idx) {
         var $el = $(this);
-        var $container = $el.parent();
+        // these are initialised after the table is created,
+        // but the reference must be visible in the fnRowDeselected handler
+        var $container;
+        var $custom_buttons;
         // allow passing options via data attributes on the element
         var url = $el.data('url');
         var delete_url = $el.data('delete-url');
@@ -132,39 +251,60 @@ function init_data_tables () {
         var columns = $.parseJSON($el.data('columns'));
         // always add the Primary Key column
         columns.push({
+            "aTargets": ["pk"],
             "sName": "pk",
             "bVisible": false
         });
+        // add the actions column
+        columns.push({
+            "aTargets": ["details_url"],
+            "sName": "details_url",
+            "sTitle": "Actions",
+            //"sClass": "no-select",
+            "mRender": function (data, type, full) {
+                return '<a class="btn btn-mini dynamic-link no-select" href="'+ data +'" data-target="detail-view"><i class="icon-share-alt"></i> Details</a>';
+            }
+        });
+        // essential options, like the datasource
+        var required_options = {
+            "sAjaxSource": url,
+            "aoColumns": columns
+        };
         // allow passing any extra options, overriding the defaults below
         var extra_options = $el.data('options');
         if (!extra_options) {
             extra_options = {};
         }
+        // sane options for any datatable
         var default_options = {
-            "sDom": "<'row-fluid'<'span3'T><'span3'r><'span6 pull-right'f>t<'row-fluid'<'span6'i><'span6 pull-right'p>><'row-fluid'<'span6 pull-right'l>><'row-fluid custom-buttons'>",
+            "sDom": "<'row-fluid'<'span5'T><'span2'r><'span5 pull-right'f>><'row-fluid't><'row-fluid'<'span6'i><'span6 pull-right'p>><'row-fluid'<'span6 pull-right'l>>",
             "asStripeClasses": [],
+            "bAutoWidth": false,
+            "fnDrawCallback": function (oSettings) {
+                // nothing
+            },
             "oTableTools": {
                 "sRowSelect": "multi",
                 "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
                 "fnRowDeselected": function (nodes) {
                     // disable any buttons operating on selected rows here
-                    var $btns = $container.find('.custom-buttons .selection-only');
+                    var $btns = $custom_buttons.find('.selection-only');
                     var self = this;
-                    $.each($btns, function (idx) {
-                        if (self.fnGetSelected().length == 0) {
-                            $(this).attr("disabled", "disabled");
-                        }
-                    });
+                    // can't use nodes.length here ...
+                    var amount_selected = self.fnGetSelected().length;
+                    if (amount_selected == 0) {
+                        $btns.attr("disabled", "disabled");
+                    }
                 },
                 "fnRowSelected": function (nodes) {
                     // enable any buttons operating on selected rows here
-                    var $btns = $container.find('.custom-buttons .selection-only');
+                    var $btns = $custom_buttons.find('.selection-only');
                     var self = this;
-                    $.each($btns, function (idx) {
-                        if (self.fnGetSelected().length != 0) {
-                            $(this).removeAttr("disabled");
-                        }
-                    });
+                    // can't use nodes.length here ...
+                    var amount_selected = self.fnGetSelected().length;
+                    if (amount_selected != 0) {
+                        $btns.removeAttr("disabled");
+                    }
                 },
                 "aButtons": [
                     "select_all",
@@ -204,19 +344,17 @@ function init_data_tables () {
             "bServerSide": true,
             "fnServerData": data_tables_fnServerData
         };
-        var required_options = {
-            "sAjaxSource": url,
-            "aoColumns": columns
-        };
         var options = $.extend({}, default_options, required_options, extra_options);
         var data_table = $el.dataTable(options);
-        // datatables replaces the old <table> element, so remove the
-        // reference
-        delete $el;
+        var oTT = TableTools.fnGetInstance(data_table.get()[0]);
+        $container = $el.parents('.dataTables_wrapper');
+
         // add our custom buttons
-        // .custom-buttons element as defined in the sDom option
-        var $buttons = $container.find('.custom-buttons');
-        add_custom_buttons($buttons, data_table, delete_url);
+        $custom_buttons = $('<div class="row-fluid custom-buttons" />');
+        $container.append($custom_buttons);
+
+        add_custom_buttons($custom_buttons, data_table, delete_url);
+        fix_selection_on_page_change(data_table);
     });
 }
 
@@ -248,6 +386,7 @@ function init_confirm_modal () {
 
 $(document).ready(function () {
     init_dynamic_forms();
+    init_dynamic_links();
     init_data_tables();
     init_confirm_modal();
 });
