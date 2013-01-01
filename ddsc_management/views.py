@@ -6,7 +6,7 @@ import logging
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils import simplejson
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
@@ -16,6 +16,8 @@ from django.views.decorators.cache import never_cache
 
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
+
+from ddsc_core.models import Timeseries
 
 from ddsc_management import forms
 from ddsc_management.utils import get_datatables_records
@@ -52,8 +54,6 @@ class DataSourceView(JsonView):
     def get_json(self, request, *args, **kwargs):
         self.request = request
         if self.action == 'list':
-            if not hasattr(self, 'list'):
-                return HttpResponseBadRequest('Action not implemented')
             data = self.list()
         else:
             return HttpResponseBadRequest('Unknown action')
@@ -62,21 +62,31 @@ class DataSourceView(JsonView):
     def post_json(self, request, *args, **kwargs):
         self.request = request
         if self.action == 'delete':
-            if not hasattr(self, 'delete'):
-                return HttpResponseBadRequest('Action not implemented')
-            pks = request.POST.getlist('pks[]')
+            pks = self.request.POST.getlist('pks[]')
             data = self.delete(pks)
         else:
             return HttpResponseBadRequest('Unknown action')
         return data
 
+    def list(self):
+        # might want to raise NotImplementedError instead
+        return HttpResponseBadRequest('Action not implemented')
+
+    def delete(self, pks):
+        # might want to raise NotImplementedError instead
+        return HttpResponseBadRequest('Action not implemented')
+
 class ModelDataSourceView(DataSourceView):
     model = None
     allowed_columns = []
     details_view_name = None
+    using = None
 
     def query_set(self):
-        return self.model.objects.all()
+        if self.using is None:
+            return self.model.objects.all()
+        else:
+            return self.model.objects.using(self.using).all()
 
     def list(self):
         query_set = self.query_set()
@@ -133,7 +143,7 @@ class BaseView(UiView):
             Action(
                 name=_('Timeseries'),
                 description=_('Manage timeseries.'),
-                url=reverse('ddsc_management.timeseries'),
+                url=reverse('ddsc_management.timeseries.list'),
                 icon=''
             ),
             Action(
@@ -158,16 +168,7 @@ class BaseView(UiView):
 
 class ViewContextFormMixin(object):
     """
-    (FormMixin)
-    A mixin that provides a way to show and handle a form in a request.
-
-    Combined with:
-
-    (ProcessFormView)
-    A mixin that processes a form on POST.
-
-    And tuned to allow a custom GET method with its own
-    RequestContext handling.
+    Clone of FormMixin: A mixin that provides a way to show and handle a form in a request.
     """
 
     initial = {}
@@ -212,23 +213,21 @@ class ViewContextFormMixin(object):
                 "No URL to redirect to. Provide a success_url.")
         return url
 
-    def form_valid(self, form):
-        return HttpResponseRedirect(self.get_success_url())
-
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(form=form))
-'''
-    def init(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        self.form = self.get_form(form_class)
-        #return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
-'''
-
-class BaseFormView(ViewContextFormMixin, BaseView):
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         self.form = self.get_form(form_class)
-        return super(BaseFormView, self).get(request, *args, **kwargs)
+        return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+        return super(ViewContextFormMixin, self).post(request, *args, **kwargs)
+
+class MyBaseFormView(ViewContextFormMixin, BaseView):
+    def get(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+        return super(MyBaseFormView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
@@ -243,6 +242,28 @@ class BaseFormView(ViewContextFormMixin, BaseView):
     def put(self, *args, **kwargs):
         return self.post(*args, **kwargs)
 
+class ProcessFormMixin(object):
+    """
+    Depends on ViewContextFormMixin.
+    """
+
+    def post(self, request, *args, **kwargs):
+        if self.form.is_valid():
+            return self.form_valid(self.form)
+        else:
+            return self.form_invalid(self.form)
+
+    # PUT is a valid HTTP verb for creating (with a known URL) or editing an
+    # object, note that browsers only support POST for now.
+    def put(self, *args, **kwargs):
+        return self.post(*args, **kwargs)
+
+    def form_valid(self, form):
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
 class MySingleObjectMixin(object):
     """
     A mixin that provides a way to show and handle a modelform in a request.
@@ -251,11 +272,18 @@ class MySingleObjectMixin(object):
     pk = None
     model = None
     object = None
+    using = None
 
     def get_object(self):
         if self.pk is None:
             return
-        return self.model.objects.get(pk=self.pk)
+        return self.query_set().get(pk=self.pk)
+
+    def query_set(self):
+        if self.using is None:
+            return self.model.objects.all()
+        else:
+            return self.model.objects.using(self.using).all()
 
     def get_initial(self):
         """
@@ -265,25 +293,22 @@ class MySingleObjectMixin(object):
         if self.object:
             initial.update({'name': self.object.name})
         return initial
-
+    '''
     def init(self, request, *args, **kwargs):
         self.pk = kwargs.get('pk', None)
         self.object = self.get_object()
         #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
     '''
+
     def get(self, request, *args, **kwargs):
         self.pk = kwargs.get('pk', None)
         self.object = self.get_object()
-        #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
+        return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.pk = kwargs.get('pk', None)
         self.object = self.get_object()
-        #return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        return HttpResponseRedirect(self.get_success_url())
-    '''
+        return super(MySingleObjectMixin, self).post(request, *args, **kwargs)
 
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
@@ -297,13 +322,43 @@ class ImportView(BaseView):
     template_name = 'ddsc_management/import.html'
     page_title = _('Import data')
 
-class TimeseriesView(BaseView):
+class TimeseriesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, BaseView):
     template_name = 'ddsc_management/timeseries.html'
-    page_title = _('Timeseries')
+    page_title = _('Manage timeseries')
+    form_class = forms.TimeseriesForm
+    model = Timeseries
+
+    def query_set(self):
+        return self.model.objects_nosecurity.using('timeseries_staging_db').all()
+
+    '''
+    def get(self, request, *args, **kwargs):
+        MySingleObjectMixin.init(self, request, *args, **kwargs)
+        return MyBaseFormView.get(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        MySingleObjectMixin.init(self, request, *args, **kwargs)
+        return MyBaseFormView.post(self, request, *args, **kwargs)
+    '''
+
+    def post(self, request, *args, **kwargs):
+        return super(TimeseriesView, self).post(request, *args, **kwargs)
+
+class TimeseriesApiView(ModelDataSourceView):
+    model = Timeseries
+    allowed_columns = ['code', 'name']
+    details_view_name = 'ddsc_management.timeseries.detail'
+
+    def query_set(self):
+        return self.model.objects_nosecurity.using('timeseries_staging_db').all()
+
+    def list(self):
+        return super(TimeseriesApiView, self).list()
 
 from ddsc_management.models import Country
 
-class SourcesView(MySingleObjectMixin, BaseFormView):
+#class SourcesView(MySingleObjectMixin, MyBaseFormView):
+class SourcesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Manage sources')
     form_class = forms.SourceForm
@@ -316,18 +371,22 @@ class SourcesView(MySingleObjectMixin, BaseFormView):
             object = Country()
         object.name = form.data['name']
         object.save()
+        self.success_url = reverse('ddsc_management.sources.detail', kwargs={'pk': object.pk})
+        return super(SourcesView, self).form_valid(form)
 
+    '''
     def get(self, request, *args, **kwargs):
         MySingleObjectMixin.init(self, request, *args, **kwargs)
         #ViewContextFormMixin.init(self, request, *args, **kwargs)
         #return super(SourcesView, self).get(request, *args, **kwargs)
-        return BaseFormView.get(self, request, *args, **kwargs)
+        return MyBaseFormView.get(self, request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         MySingleObjectMixin.init(self, request, *args, **kwargs)
         #ViewContextFormMixin.init(self, request, *args, **kwargs)
         #return super(SourcesView, self).post(request, *args, **kwargs)
-        return BaseFormView.post(self, request, *args, **kwargs)
+        return MyBaseFormView.post(self, request, *args, **kwargs)
+    '''
 
 class SourcesApiView(ModelDataSourceView):
     model = Country

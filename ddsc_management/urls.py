@@ -16,7 +16,16 @@ urlpatterns = patterns(
 
     url(r'^alarms/$', views.AlarmsView.as_view(), name='ddsc_management.alarms'),
     url(r'^import/$', views.ImportView.as_view(), name='ddsc_management.import'),
-    url(r'^timeseries/$', views.TimeseriesView.as_view(), name='ddsc_management.timeseries'),
+
+    url(r'^timeseries/$',
+        views.TimeseriesView.as_view(action='list'),   name='ddsc_management.timeseries.list'),
+    url(r'^timeseries/add/$',
+        views.TimeseriesView.as_view(action='add'),    name='ddsc_management.timeseries.add'),
+    url(r'^timeseries/(?P<pk>\d+)/$',
+        views.TimeseriesView.as_view(action='detail'), name='ddsc_management.timeseries.detail'),
+
+    url(r'^api/timeseries/$',
+        views.TimeseriesApiView.as_view(action='list'),   name='ddsc_management.api.timeseries.list'),
 
     url(r'^sources/$',
         views.SourcesView.as_view(action='list'),   name='ddsc_management.sources.list'),
@@ -28,9 +37,9 @@ urlpatterns = patterns(
         views.SourcesView.as_view(action='edit'),   name='ddsc_management.sources.edit'),
 
     url(r'^api/sources/$',
-        views.SourcesApiView.as_view(action='list'),   name='ddsc_management.api.list_sources'),
+        views.SourcesApiView.as_view(action='list'),   name='ddsc_management.api.sources.list'),
     url(r'^api/sources/delete/$',
-        views.SourcesApiView.as_view(action='delete'), name='ddsc_management.api.delete_sources'),
+        views.SourcesApiView.as_view(action='delete'), name='ddsc_management.api.sources.delete'),
 
     url(r'^locations/$', views.LocationsView.as_view(), name='ddsc_management.locations'),
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),

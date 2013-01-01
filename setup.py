@@ -19,6 +19,7 @@ install_requires = [
     'python-memcached',
     'raven',
     'werkzeug',
+    'ddsc-core',
     ],
 
 setup(name='ddsc-management',

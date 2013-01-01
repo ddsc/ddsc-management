@@ -6,7 +6,7 @@ DEBUG = True
 
 # By default, var/log/django.log gets WARN level logging, the console gets
 # DEBUG level logging.
-LOGGING = setup_logging(BUILDOUT_DIR)
+LOGGING = setup_logging(BUILDOUT_DIR, sql=True)
 
 # ENGINE: 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 # In case of geodatabase, prepend with:
@@ -30,7 +30,15 @@ DATABASES = {
         'PASSWORD': 'buildout',
         'HOST': '',  # empty string for localhost.
         'PORT': '',  # empty string for default.
-        }
+        },
+    'timeseries_staging_db': {
+        'NAME': 'ddsc_api',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'USER': 'ddsc_api',
+        'PASSWORD': 'buildout',
+        'HOST': '10.100.232.151', #'s-ddsc-ws-d1.external-nens.local',
+        'PORT': '5432',
+        },
     }
 
 

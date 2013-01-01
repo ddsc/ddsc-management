@@ -146,3 +146,7 @@ class SourceForm(forms.Form):
     )
     supplier = forms.CharField(max_length=30, label=_('Supplier'), required=True)
     details = forms.CharField(max_length=255, label=_('Details'), required=True)
+
+class TimeseriesForm(forms.Form):
+    code = forms.CharField(max_length=30, label=_('Code'), required=True)
+    name = forms.CharField(max_length=30, label=_('Name'), required=True)

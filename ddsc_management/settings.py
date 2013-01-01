@@ -134,9 +134,10 @@ MIDDLEWARE_CLASSES = (
 
 INSTALLED_APPS = (
     'ddsc_management',
-    'lizard_map',
-    'lizard_ui',
-    'lizard_security',
+    'lizard_security',  # before lizard_ui!
+    'lizard_ui',  # after lizard_security!
+    'ddsc_core',  # after lizard_security!
+    'treebeard',
     'south',
     'compressor',
     'staticfiles',
