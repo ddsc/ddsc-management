@@ -327,6 +327,7 @@ class TimeseriesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin
     page_title = _('Manage timeseries')
     form_class = forms.TimeseriesForm
     model = Timeseries
+    using = 'timeseries_staging_db'
 
     def query_set(self):
         return self.model.objects_nosecurity.using('timeseries_staging_db').all()
@@ -357,7 +358,6 @@ class TimeseriesApiView(ModelDataSourceView):
 
 from ddsc_management.models import Country
 
-#class SourcesView(MySingleObjectMixin, MyBaseFormView):
 class SourcesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Manage sources')

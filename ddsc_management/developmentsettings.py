@@ -21,8 +21,8 @@ DATABASES = {
     # the specified database exists. When the tests cannot run, Jenkins sees
     # that as an error.
     'default': {
-        'NAME': os.path.join(BUILDOUT_DIR, 'var', 'sqlite', 'test.db'),
-        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
+        #'NAME': os.path.join(BUILDOUT_DIR, 'var', 'sqlite', 'test.db'),
+        #'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         # If you want to use postgres, use the two lines below.
         # 'NAME': 'ddsc_management',
         # 'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -30,14 +30,6 @@ DATABASES = {
         'PASSWORD': 'buildout',
         'HOST': '',  # empty string for localhost.
         'PORT': '',  # empty string for default.
-        },
-    'timeseries_staging_db': {
-        'NAME': 'ddsc_api',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'USER': 'ddsc_api',
-        'PASSWORD': 'buildout',
-        'HOST': '10.100.232.151', #'s-ddsc-ws-d1.external-nens.local',
-        'PORT': '5432',
         },
     }
 
