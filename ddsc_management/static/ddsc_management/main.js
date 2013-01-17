@@ -58,43 +58,6 @@ function init_dynamic_links () {
     );
 }
 
-// function init_dynamic_form ($el) {
-    // var id = $el.attr('id');
-    // if (id) {
-        // var $submit = $el.find('input[type=submit], button[type=submit]');
-        // $submit.click(function (event) {
-            // event.preventDefault();
-            // var $form = $el.find('form');
-            // $.post(
-                // $form.attr('action'),
-                // $form.serialize()
-            // )
-            // .success(function (data) {
-                // var $new_el = $(data).find('#' + id);
-                // // Replace the old element containing the form with the
-                // // new one.
-                // // .replaceWith() internally calls .remove(), which
-                // // should properly unbind all event handlers.
-                // $el.replaceWith($new_el);
-                // // rebind this event handler again
-                // init_dynamic_form($new_el);
-            // })
-            // .error(function (data) {
-                // $el.replaceWith('<div>Error while submitting form.</div>');
-            // });
-        // });
-    // }
-    // else {
-        // console.error(
-            // 'Encountered a form which has ".dynamic-form" set, but no ' +
-            // 'unique "id" attribute: this form can not be made dynamic.'
-        // );
-    // }
-// }
-// $('.dynamic-form').each(function (idx) {
-    // init_dynamic_form($(this));
-// });
-
 function init_dynamic_forms () {
     $(document).on("click",
         ".dynamic-form input[type=submit], button[type=submit]",
@@ -128,7 +91,7 @@ function init_dynamic_forms () {
 
 function add_custom_buttons ($container, data_table, delete_url) {
     if (delete_url) {
-        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled"><i class="icon-trash"></i> Delete selected rows</button>');
+        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled"><i class="icon-trash"></i> Delete selected item(s)</button>');
         $delete.click(function (event) {
             // find out which column contains the PK
             var columns = data_table.fnSettings()["aoColumns"];
@@ -150,7 +113,7 @@ function add_custom_buttons ($container, data_table, delete_url) {
                 if (selected.length > 0) {
                     show_confirm_modal(
                         "Are you sure?",
-                        "Are you sure you want to delete the row(s) with ID = " + selected + "?",
+                        "Are you sure you want to delete the item(s) with ID = " + selected + "?",
                         function () {
                             $.post(
                                 delete_url,
@@ -168,7 +131,7 @@ function add_custom_buttons ($container, data_table, delete_url) {
                                 // });
                             })
                             .error(function (data, textStatus, jqXHR) {
-                                alert('Error while deleting row(s): ' + data.status + ' ' + data.statusText);
+                                alert('Error while deleting item(s): ' + data.status + ' ' + data.statusText);
                             });
                         }
                     );

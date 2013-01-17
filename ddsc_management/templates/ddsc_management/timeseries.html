@@ -27,42 +27,40 @@
         <tfoot>
         </tfoot>
     </table>
-    <div>
-        <a href="{% url ddsc_management.timeseries.add %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-plus"></i> Add a new timeserie</a>
-    </div>
 </div>
 <div id="detail-view" class="span6">
     <div class="row">
         {% if view.action == 'detail' %}
+            <legend>Details</legend>
             <h2>{{ view.object.name }}</h2>
             <p>{{ view.object.formal_name }}</p>
         {% elif view.action == 'add' %}
             <div id="add-form" class="dynamic-form" data-target="add-form">
                 {% url ddsc_management.timeseries.add as action %}
-                {% with form=view.form form_header=_('Add timeserie') action=action %}
+                {% with form=view.form form_header=_('Add item') action=action %}
                 {% include 'ddsc_management/form.html' %}
                 {% endwith %}
             </div>
         {% elif view.action == 'edit' %}
             <div id="edit-form" class="dynamic-form" data-target="edit-form">
                 {% url ddsc_management.sources.edit pk=40 as action %}
-                {% with form=view.form form_header=_('Edit timeserie') action=action %}
+                {% with form=view.form form_header=_('Edit item') action=action %}
                 {% include 'ddsc_management/form.html' %}
                 {% endwith %}
             </div>
         {% elif view.action == 'list' %}
+            <legend>Details</legend>
             <p>No item selected.</p>
         {% endif %}
     </div>
-    {% if view.action == 'detail' %}
     <div class="row">
         <div class="span12">
-            <a href="{% url ddsc_management.sources.edit pk=view.pk %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-edit"></i> Edit</a>
-        </div>
-    </div>
-    {% endif %}
-    <div class="row">
-        <div class="span12">
+            {% if view.action == 'detail' %}
+            <a href="{% url ddsc_management.sources.edit pk=view.pk %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-edit"></i> Edit item</a>
+            {% endif %}
+            {% if view.action == 'detail' or view.action == 'list' %}
+            <a href="{% url ddsc_management.timeseries.add %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-plus"></i> Add a new item</a>
+            {% endif %}
             {% if view.action == 'add' or view.action == 'edit' %}
                 <a href="{% url ddsc_management.timeseries.list %}" class="btn btn-warning dynamic-link" data-target="detail-view"><i class="icon-ban-circle"></i> Cancel</a>
             {% endif %}
