@@ -260,6 +260,7 @@ function init_data_tables () {
             "aTargets": ["details_url"],
             "sName": "details_url",
             "sTitle": "Actions",
+            "bSortable": false,
             //"sClass": "no-select",
             "mRender": function (data, type, full) {
                 return '<a class="btn btn-mini dynamic-link no-select" href="'+ data +'" data-target="detail-view"><i class="icon-share-alt"></i> Details</a>';
