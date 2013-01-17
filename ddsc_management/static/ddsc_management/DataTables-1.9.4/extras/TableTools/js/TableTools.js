@@ -1024,31 +1024,35 @@ TableTools.prototype = {
 			
 			$(dt.nTable).addClass( this.classes.select.table );
 			
-			$('tr', dt.nTBody).live( 'click', function(e) {
+			// CHANGED by ejnens: only attach to first-child instead of entire row
+            //$('tr', dt.nTBody).live( 'click', function(e) {
+			$('tr > td:first-child', dt.nTBody).live( 'click', function(e) {
 				/* Sub-table must be ignored (odd that the selector won't do this with >) */
-				if ( this.parentNode != dt.nTBody )
+				//if ( this.parentNode != dt.nTBody )
+                if ( this.parentNode.parentNode != dt.nTBody )
 				{
 					return;
 				}
-				
+
+				var row = this.parentNode;
 				/* Check that we are actually working with a DataTables controlled row */
-				if ( dt.oInstance.fnGetData(this) === null )
+				if ( dt.oInstance.fnGetData(row) === null )
 				{
 				    return;
 				}
 
-				if ( that.fnIsSelected( this ) )
+				if ( that.fnIsSelected( row ) )
 				{
-					that._fnRowDeselect( this, e );
+					that._fnRowDeselect( row, e );
 				}
 				else if ( that.s.select.type == "single" )
 				{
 					that.fnSelectNone();
-					that._fnRowSelect( this, e );
+					that._fnRowSelect( row, e );
 				}
 				else if ( that.s.select.type == "multi" )
 				{
-					that._fnRowSelect( this, e );
+					that._fnRowSelect( row, e );
 				}
 			} );
 
