@@ -1,57 +1,40 @@
 (function (global) {
 
-$.fn.dynamic_get = function (url) {
-    var target = $(this).attr('id');
-    if (!target) {
-        console.error(
-            'No id set, so can not properly determine target element.'
-        );
-        return;
-    }
-    $.get(
-        url
-    )
-    .success(function (data) {
-        var $new_el = $(data).find('#' + target);
-        var $old_el = $('#' + target);
-        // Replace the old element containing the data with the
-        // new one.
-        // .replaceWith() internally calls .remove(), which
-        // should properly unbind all event handlers.
-        $old_el.replaceWith($new_el);
-    })
-    .error(function (data) {
-        // enforce a screen refresh
-        window.location = url
-    });
-};
+function wrapped_replace_with (target, data) {
+    // root elements with an id can't be found without wrapping first
+    // (for some reason)
+    var $wrapped = $('<div>' + data + '</div>');
+    var $new_el = $wrapped.find('#' + target);
+    var $old_el = $('#' + target);
+    // Replace the old element containing the form with the
+    // new one.
+    // .replaceWith() internally calls .remove(), which
+    // should properly unbind all event handlers.
+    $old_el.replaceWith($new_el);
+    // remove the wrapper as well
+    $wrapped.remove();
+}
 
 function init_dynamic_links () {
-    $(document).on("click",
-        "a.dynamic-link",
+    $(document).on('click',
+        'a.dynamic-link',
         function (event) {
             var $el = $(this);
             var target = $el.data('target');
             if (!target) {
+                console.error(
+                    'No target id set, so can not properly determine target element.'
+                );
                 return;
             }
-            event.stopPropagation();
             event.preventDefault();
             var url = $el.attr('href');
-            $.get(
-                url
-            )
+            $.get(url)
             .success(function (data) {
-                var $new_el = $(data).find('#' + target);
-                var $old_el = $('#' + target);
-                // Replace the old element containing the data with the
-                // new one.
-                // .replaceWith() internally calls .remove(), which
-                // should properly unbind all event handlers.
-                $old_el.replaceWith($new_el);
+                wrapped_replace_with(target, data);
             })
             .error(function (data) {
-                // enforce a screen refresh
+                // enforce a full screen refresh
                 window.location = url
             });
         }
@@ -59,33 +42,32 @@ function init_dynamic_links () {
 }
 
 function init_dynamic_forms () {
-    $(document).on("click",
-        ".dynamic-form input[type=submit], button[type=submit]",
-        function (event) {
-            event.preventDefault();
-            var $el = $(this).parents('.dynamic-form');
-            var target = $el.data('target');
-            if (!target) {
-                return;
-            }
-            var $form = $el.find('form');
-            $.post(
-                $form.attr('action'),
-                $form.serialize()
-            )
-            .success(function (data) {
-                var $new_el = $(data).find('#' + target);
-                var $old_el = $('#' + target);
-                // Replace the old element containing the form with the
-                // new one.
-                // .replaceWith() internally calls .remove(), which
-                // should properly unbind all event handlers.
-                $old_el.replaceWith($new_el);
-            })
-            .error(function (data) {
-                $el.replaceWith('<div>Error while submitting form.</div>');
-            });
+    function dynamic_submit (event) {
+        event.preventDefault();
+        var $el = $(this);
+        var target = $el.data('target');
+        if (!target) {
+            target = $el.attr('id');
         }
+        if (!target) {
+            console.error(
+                'No id or target id set, so can not properly determine target element.'
+            );
+            return;
+        }
+        var $form = $el;
+        $.post($form.attr('action'), $form.serialize())
+        .success(function (data) {
+            wrapped_replace_with(target, data);
+        })
+        .error(function (data) {
+            $el.replaceWith('<p class="error">Error while submitting form.</p>');
+        });
+    }
+
+    $(document).on('submit',
+        'form.dynamic-form',
+        dynamic_submit
     );
 }
 
@@ -138,23 +120,10 @@ function add_custom_buttons ($container, data_table, delete_url) {
                 }
             }
         });
-        $('<div class="span3"/>')
+        $('<div class="span12"/>')
             .wrapInner($delete)
             .appendTo($container);
     }
-}
-
-function add_edit_buttons ($container, data_table) {
-    var $edit = $('<button class="btn"><i class="icon-edit"></i> Edit</button>');
-    $edit.click(function (event) {
-    });
-    var $row_buttons = $('<div class="row-buttons" />');
-    $row_buttons.css({
-        position: 'absolute'
-    });
-    $row_buttons.hide();
-    $row_buttons.append($edit);
-    $container.append($row_buttons);
 }
 
 function fix_selection_on_page_change (data_table) {
@@ -322,36 +291,96 @@ function init_data_tables () {
     });
 }
 
-function show_confirm_modal (header, message, confirm_callback) {
-    var $modal = $('#confirm-modal');
+function show_confirm_modal (header, message, continue_callback) {
+    var $container = $('<div/>');
+    var template_html = $('#modal-template').html();
+    $container.html(template_html);
+    var $modal = $container.find('.modal');
+    $modal.appendTo($('body'));
+    $container.remove();
+
     $modal.find('.modal-header-label').html(header);
     $modal.find('.modal-body p').html(message);
-    $modal.data('confirm_callback', confirm_callback);
-    $modal.modal('show');
-}
-
-function init_confirm_modal () {
-    var $container = $('<div>');
-    var template_html = $('#confirm-modal-template').html();
-    $container.html(template_html);
-    $container.appendTo($('body'));
-    var $modal = $container.find('.modal');
-    $modal.find('.modal-confirm').click(function (event) {
-        var callback = $modal.data('confirm_callback');
-        if (typeof callback !== 'undefined') {
-            callback(event);
+    $modal.find('.modal-continue').click(function (event) {
+        if (typeof continue_callback !== 'undefined') {
+            continue_callback(event);
         }
         $modal.modal('hide');
     });
     $modal.modal({
-        show: false
+        show: true
     });
+
+    // ensure element is properly destroyed
+    // currently Twitter Bootstrap lacks a modal('destroy') method:
+    // https://github.com/twitter/bootstrap/issues/5884
+    $modal.on('hidden', function () {
+        $(this).data('modal', null);
+        $(this).remove();
+    });
+}
+
+function create_inline_form_modal (header, app_label, model_name, field, form_url, submit_callback) {
+    // wrap template in a container and extract .modal element
+    var $container = $('<div>');
+    var template_html = $('#modal-template').html();
+    $container.html(template_html);
+    var $modal = $container.find('.modal');
+    $modal.appendTo($('body'));
+    $container.remove();
+
+    // update the header
+    $modal.find('.modal-header-label').html(header);
+
+    function continue_inline_form_modal (event) {
+        $modal.find('.modal-body form').submit();
+        // if (typeof submit_callback !== 'undefined') {
+            // submit_callback(event);
+        // }
+        // $modal.modal('hide');
+    }
+
+    // retrieve the form and stuff it in the modal body
+    $.get(form_url)
+    .success(function (data) {
+        $modal.find('.modal-body').html(data);
+        $modal.find('.modal-continue').click(continue_inline_form_modal);
+    })
+    .error(function (data) {
+        $modal.find('.modal-body').html('<p class="error">Error loading form.</p>');
+    })
+    .complete(function () {
+        $modal.modal({
+            show: true
+        });
+
+        // ensure element is properly destroyed
+        // currently Twitter Bootstrap lacks a modal('destroy') method:
+        // https://github.com/twitter/bootstrap/issues/5884
+        $modal.on('hidden', function () {
+            $(this).data('modal', null);
+            $(this).remove();
+        });
+    });
+}
+
+function init_inline_forms () {
+    $(document).on('click',
+        'button[data-inline-add-app-label]',
+        function (event) {
+            var app_label = $(this).data('inline-add-app-label');
+            var model_name = $(this).data('inline-add-model-name');
+            var field = $(this).data('inline-add-field');
+            var form_url = $(this).data('inline-add-form-url');
+            create_inline_form_modal('hdr', app_label, model_name, field, form_url);
+        }
+    );
 }
 
 $(document).ready(function () {
     init_dynamic_forms();
     init_dynamic_links();
+    init_inline_forms();
     init_data_tables();
-    init_confirm_modal();
 });
 }(this));

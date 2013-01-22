@@ -3,10 +3,13 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.forms import ValidationError
+from django.core.urlresolvers import reverse
 from django.contrib import auth
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.forms import widgets
+from django.utils.safestring import mark_safe
 
 #
 #def validate_password(cleaned_password):
@@ -130,23 +133,96 @@ from django.conf import settings
 #            raise ValidationError(_('{} is already taken.').format(email))
 #        return email
 
-class SourceForm(forms.Form):
-    name = forms.CharField(max_length=30, label=_('Name'), required=True)
-    type = forms.ChoiceField(
-        label=_('Type'),
-        required=True,
-        choices=[
-            ('sensor', _('Sensor')),
-            ('der', _('Der.')),
-            ('cal', _('Cal.')),
-            ('sim', _('Sim.'))
-        ],
-        widget=forms.RadioSelect(),
-        initial='sensor'
-    )
-    supplier = forms.CharField(max_length=30, label=_('Supplier'), required=True)
-    details = forms.CharField(max_length=255, label=_('Details'), required=True)
+class SelectWithInlineFormPopup(widgets.Select):
+    def render(self, name, value, attrs=None, choices=()):
+        select_html = widgets.Select.render(self, name, value, attrs=attrs, choices=choices)
+        output = []
+        output.append(u'<div class="input-append">')
+        output.append(select_html)
+        output.append(u'<button class="btn" type="button"')
 
-class TimeseriesForm(forms.Form):
-    code = forms.CharField(max_length=30, label=_('Code'), required=True)
-    name = forms.CharField(max_length=30, label=_('Name'), required=True)
+        model_class = self.attrs['model']
+        app_label = model_class._meta.app_label
+        model_name = model_class._meta.verbose_name
+        field = self.attrs['field'] if 'field' in self.attrs else name
+
+        form_url = reverse('ddsc_management.inline_form', kwargs={
+            'app_label': app_label,
+            'model_name': model_name,
+            'field': field,
+        })
+
+        output.append(u' data-inline-add-app-label="' + unicode(app_label) + u'"')
+        output.append(u' data-inline-add-model-name="' + unicode(model_name) + u'"')
+        output.append(u' data-inline-add-field="' + unicode(field) + u'"')
+        output.append(u' data-inline-add-form-url="' + unicode(form_url) + u'"')
+
+        output.append(u'><i class="icon-plus-sign"></i></button>')
+        output.append(u'</div>')
+        html = mark_safe(u'\n'.join(output))
+        return html
+
+from ddsc_core import models
+
+class SourceForm(forms.ModelForm):
+    class Meta:
+        model = models.Source
+        widgets = {
+#            'manufacturer': widgets.Select(
+#                attrs={
+#                    'data-inline-add-for': models.Source._meta.verbose_name
+#                }
+#            ),
+            'manufacturer': SelectWithInlineFormPopup(attrs={
+                'field': 'manufacturer',
+                'model': models.Source
+            }),
+        }
+#    manufacturer = forms.ModelChoiceField(
+#        queryset=models.Manufacturer.objects.all(),
+#        widget=SelectWithInlineFormPopup
+#    )
+#    name = forms.CharField(max_length=30, label=_('Name'), required=True)
+#    type = forms.ChoiceField(
+#        label=_('Type'),
+#        required=True,
+#        choices=[
+#            ('sensor', _('Sensor')),
+#            ('der', _('Der.')),
+#            ('cal', _('Cal.')),
+#            ('sim', _('Sim.'))
+#        ],
+#        widget=forms.RadioSelect(),
+#        initial='sensor'
+#    )
+#    supplier = forms.CharField(max_length=30, label=_('Supplier'), required=True)
+#    details = forms.CharField(max_length=255, label=_('Details'), required=True)
+
+class TimeseriesForm(forms.ModelForm):
+    class Meta:
+        model = models.Timeseries
+        fields = [
+            'code',
+            'name',
+            'description',
+            'data_set',
+            'supplying_systems',
+            'value_type',
+            'source',
+            'owner',
+            'location',
+            'parameter',
+            'unit',
+            'reference_frame',
+            'compartment',
+            'measuring_device',
+            'measuring_method',
+            'processing_method',
+        ]
+
+    #code = forms.CharField(max_length=30, label=_('Code'), required=True)
+    #name = forms.CharField(max_length=30, label=_('Name'), required=True)
+
+class ManufacturerForm(forms.ModelForm):
+    class Meta:
+        model = models.Manufacturer

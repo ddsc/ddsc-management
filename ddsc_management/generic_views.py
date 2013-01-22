@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import logging
 
+from django.forms import models as model_forms
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -12,9 +14,16 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import View
+from django.views.generic.base import TemplateView
 from django.views.decorators.cache import never_cache
+from django.utils.encoding import smart_str
+from django.db.models.loading import get_model
+
+from lizard_ui.views import ViewContextMixin
 
 from ddsc_management.utils import get_datatables_records
+from ddsc_management import forms
+from ddsc_core import models
 
 logger = logging.getLogger(__name__)
 
@@ -74,13 +83,9 @@ class ModelDataSourceView(DataSourceView):
     model = None
     allowed_columns = []
     details_view_name = None
-    using = None
 
     def query_set(self):
-        if self.using is None:
-            return self.model.objects.all()
-        else:
-            return self.model.objects.using(self.using).all()
+        return self.model.objects.all()
 
     def list(self):
         query_set = self.query_set()
@@ -107,14 +112,12 @@ class ModelDataSourceView(DataSourceView):
             'skipped': skipped,
         }
 
-class ViewContextFormMixin(object):
+class MyFormMixin(object):
     """
-    Clone of FormMixin: A mixin that provides a way to show and handle a form in a request.
+    Clone of FormMixin: A mixin that provides a way to show a form in a request.
     """
-
     initial = {}
     form_class = None
-    success_url = None
 
     def get_initial(self):
         """
@@ -146,30 +149,28 @@ class ViewContextFormMixin(object):
             })
         return kwargs
 
-    def get_success_url(self):
-        if self.success_url:
-            url = self.success_url
-        else:
-            raise ImproperlyConfigured(
-                "No URL to redirect to. Provide a success_url.")
-        return url
+    def _init_form(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        self.form = self.get_form(form_class)
+
+    def get_context_data(self, **kwargs):
+        context = super(MyFormMixin, self).get_context_data(**kwargs)
+        context['form'] = self.form
+        return context
+
+class MyProcessFormMixin(object):
+    """
+    Handle the form when set on a View.
+    Load before MyFormMixin.
+    """
+    success_url = None
 
     def get(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        self.form = self.get_form(form_class)
-        return super(ViewContextFormMixin, self).get(request, *args, **kwargs)
+        self._init_form(request, *args, **kwargs)
+        return super(MyProcessFormMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        self.form = self.get_form(form_class)
-        return super(ViewContextFormMixin, self).post(request, *args, **kwargs)
-
-class ProcessFormMixin(object):
-    """
-    Depends on ViewContextFormMixin.
-    """
-
-    def post(self, request, *args, **kwargs):
+        self._init_form(request, *args, **kwargs)
         if self.form.is_valid():
             return self.form_valid(self.form)
         else:
@@ -181,20 +182,27 @@ class ProcessFormMixin(object):
         return self.post(*args, **kwargs)
 
     def form_valid(self, form):
-        return HttpResponseRedirect(self.get_success_url())
+        raise NotImplementedError()
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
 
+    def get_success_url(self):
+        if self.success_url:
+            url = self.success_url
+        else:
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
+        return url
+
 class MySingleObjectMixin(object):
     """
-    A mixin that provides a way to show and handle a modelform in a request.
+    A mixin that allows an object with a single PK to be passed directly
+    in a form. Load before MyFormMixin when needed.
     """
-
     pk = None
     model = None
     object = None
-    using = None
 
     def get_object(self):
         if self.pk is None:
@@ -202,10 +210,7 @@ class MySingleObjectMixin(object):
         return self.query_set().get(pk=self.pk)
 
     def query_set(self):
-        if self.using is None:
-            return self.model.objects.all()
-        else:
-            return self.model.objects.using(self.using).all()
+        return self.model.objects.all()
 
     def get_initial(self):
         """
@@ -216,12 +221,100 @@ class MySingleObjectMixin(object):
             initial.update({'name': self.object.name})
         return initial
 
-    def get(self, request, *args, **kwargs):
+    def _init_object(self, request, *args, **kwargs):
         self.pk = kwargs.get('pk', None)
-        self.object = self.get_object()
+        if self.pk is not None:
+            self.object = self.get_object()
+
+    def get(self, request, *args, **kwargs):
+        self._init_object(request, *args, **kwargs)
         return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.pk = kwargs.get('pk', None)
-        self.object = self.get_object()
+        self._init_object(request, *args, **kwargs)
         return super(MySingleObjectMixin, self).post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(MySingleObjectMixin, self).get_context_data(**kwargs)
+        context['pk'] = self.pk
+        context['object'] = self.object
+        return context
+
+class MySingleObjectFormMixin(object):
+    """
+    Combines an object set on the view with the form.
+    """
+
+    def get_form_class(self):
+        """
+        Returns the form class to use in this view
+        """
+        if self.form_class:
+            return self.form_class
+        else:
+            return model_forms.modelform_factory(self.model)
+
+    def get_form_kwargs(self):
+        """
+        Returns the keyword arguments for instanciating the form.
+        """
+        kwargs = super(MySingleObjectFormMixin, self).get_form_kwargs()
+        kwargs.update({'instance': self.object})
+        return kwargs
+
+class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
+    app_label = None
+    model_name = None
+    field = None
+    related_model = None
+    template_name = 'ddsc_management/inline_form.html'
+    model_to_form = {
+        models.Manufacturer: forms.ManufacturerForm
+    }
+
+    def _init_related_model(self, request, app_label, model_name, field, *args, **kwargs):
+        self.app_label = app_label
+        self.model_name = model_name
+        self.field = field
+        self.related_model = self.get_related_model()
+
+    def get(self, request, *args, **kwargs):
+        self._init_related_model(request, *args, **kwargs)
+        return super(InlineFormView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self._init_related_model(request, *args, **kwargs)
+        return super(InlineFormView, self).post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(InlineFormView, self).get_context_data(**kwargs)
+        context['app_label'] = self.app_label
+        context['model_name'] = self.model_name
+        context['field'] = self.field
+        context['related_model'] = self.related_model
+        return context
+
+    def get_related_model(self):
+        # validate parameters here because they
+        # might be passed on to the template again
+        if self.app_label != 'ddsc_core':
+            raise Exception('Inline form not allowed for app_label {}.'.format(self.app_label))
+        if self.model_name not in ['source']:
+            raise Exception('Inline form not allowed for model {}.'.format(self.model_name))
+
+        # get the Model class and the field meta info
+        model_class = get_model(self.app_label, self.model_name)
+        model_field = model_class._meta.get_field_by_name(self.field)
+
+        if not model_field:
+            raise Exception('Unknown field {} for model {}.'.format(self.field, self.model_name))
+
+        # find out what the foreign key is pointing to
+        return model_field[0].related.parent_model
+
+    def get_form_class(self):
+        return self.model_to_form[self.related_model]
+
+    def form_valid(self, form):
+        form.save()
+        return HttpResponse(status=201)

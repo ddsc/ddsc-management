@@ -1,10 +1,11 @@
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.db.models.fields.related import RelatedField
 
 # Never return more then MAX_RECORDS records
 MAX_RECORDS = 10000
 
-def get_datatables_records(request, querySet, allowedColitems=[], details_view_name=None):
+def get_datatables_records(request, querySet, allowedColitems=[], details_view_name=None, searchableColumns=[]):
     """
     Usage:
         querySet: query set to draw data from.
@@ -84,11 +85,13 @@ def get_datatables_records(request, querySet, allowedColitems=[], details_view_n
         querySet = querySet.order_by(*aSortingCols)
 
     # Determine which columns are searchable
-    searchableColumns = []
-    for col in range(0, cols):
-        if request.GET.get('bSearchable_{0}'.format(col), False) == 'true' and \
-           col in columnIndexNameMap:
-            searchableColumns.append(columnIndexNameMap[col])
+    if not searchableColumns:
+        searchableColumns = [field.name for field in querySet.model._meta.fields if not isinstance(field, RelatedField)]
+    #searchableColumns = []
+    #for col in range(0, cols):
+    #    if request.GET.get('bSearchable_{0}'.format(col), False) == 'true' and \
+    #       col in columnIndexNameMap:
+    #        searchableColumns.append(columnIndexNameMap[col])
 
     # Apply filtering by value sent by user
     customSearch = request.GET.get('sSearch', '').encode('utf-8');

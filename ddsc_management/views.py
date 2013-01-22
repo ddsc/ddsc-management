@@ -17,11 +17,11 @@ from django.views.decorators.cache import never_cache
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
 
-from ddsc_core.models import Timeseries
+from ddsc_core import models
 
 from ddsc_management import forms
 from ddsc_management.utils import get_datatables_records
-from ddsc_management.generic_views import MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, ModelDataSourceView
+from ddsc_management.generic_views import MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, ModelDataSourceView, MySingleObjectFormMixin
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +81,11 @@ class BaseView(UiView):
             ),
         ]
 
+    def get_context_data(self, **kwargs):
+        context = super(BaseView, self).get_context_data(**kwargs)
+        context['action'] = self.action
+        return context
+
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
     page_title = _('Summary')
@@ -93,62 +98,62 @@ class ImportView(BaseView):
     template_name = 'ddsc_management/import.html'
     page_title = _('Import data')
 
-class TimeseriesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, BaseView):
+class TimeseriesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
     template_name = 'ddsc_management/timeseries.html'
     page_title = _('Manage timeseries')
     form_class = forms.TimeseriesForm
-    model = Timeseries
-    using = 'timeseries_staging_db'
+    model = models.Timeseries
 
     def query_set(self):
-        return self.model.objects_nosecurity.using('timeseries_staging_db').all()
-
-    def post(self, request, *args, **kwargs):
-        return super(TimeseriesView, self).post(request, *args, **kwargs)
+        return self.model.objects_nosecurity.all()
 
 class TimeseriesApiView(ModelDataSourceView):
-    model = Timeseries
+    model = models.Timeseries
     allowed_columns = ['code', 'name']
     details_view_name = 'ddsc_management.timeseries.detail'
 
     def query_set(self):
-        return self.model.objects_nosecurity.using('timeseries_staging_db').all()
+        return self.model.objects_nosecurity.all()
 
     def list(self):
         return super(TimeseriesApiView, self).list()
 
-from ddsc_management.models import Country
-
-class SourcesView(MySingleObjectMixin, ViewContextFormMixin, ProcessFormMixin, BaseView):
+class SourcesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Manage sources')
     form_class = forms.SourceForm
-    model = Country
+    model = models.Source
 
     def form_valid(self, form):
-        if self.object is not None:
-            object = self.object
-        else:
-            object = Country()
-        object.name = form.data['name']
-        object.save()
-        self.success_url = reverse('ddsc_management.sources.detail', kwargs={'pk': object.pk})
-        return super(SourcesView, self).form_valid(form)
-
+        form.save()
+#        if self.action == 'edit':
+#            object = self.object
+#        elif self.action == 'add':
+#            object = self.model()
+#        object.name = form.data['name']
+#        object.source_type = form.data['source_type']
+#        object.manufacturer = models.Manufacturer.objects.get(pk=form.data['manufacturer'])
+#        object.details = form.data['details']
+#        object.save()
+#        self.success_url = reverse('ddsc_management.sources.detail', kwargs={'pk': object.pk})
+        return HttpResponse(status=201)
 
 class SourcesApiView(ModelDataSourceView):
-    model = Country
-    allowed_columns = ['name', 'formal_name']
+    model = models.Source
+    allowed_columns = ['name', 'source_type', 'manufacturer']
     details_view_name = 'ddsc_management.sources.detail'
 
     def list(self):
         # DEBUG create a few objects if none exist
         if self.query_set().count() == 0:
+            m = models.Manufacturer()
+            m.name = 'generic'
+            m.save()
             for i in range(200):
-                c = Country()
+                c = models.Source()
+                c.manufacturer = m
                 c.name = 'name {:03d}'.format(i)
-                c.formal_name = 'formal name {:03d}'.format(i)
-                c.capital = 'capital {:03d}'.format(i)
+                c.details = 'details {:03d}'.format(i)
                 c.save()
         # /DEBUG
         return super(SourcesApiView, self).list()

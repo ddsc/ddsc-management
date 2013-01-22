@@ -6,7 +6,7 @@ DEBUG = True
 
 # By default, var/log/django.log gets WARN level logging, the console gets
 # DEBUG level logging.
-LOGGING = setup_logging(BUILDOUT_DIR, sql=True)
+LOGGING = setup_logging(BUILDOUT_DIR)
 
 # ENGINE: 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 # In case of geodatabase, prepend with:

@@ -32,8 +32,8 @@ lizard.static_url = '{{ STATIC_URL }}';
         src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/fnReloadAjax.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}ddsc_management/main.js"></script>
-<script type="text/html" id="confirm-modal-template">
-    <div id="confirm-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-header-label" aria-hidden="true">
+<script type="text/html" id="modal-template">
+    <div class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-header-label" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             <h3 id="modal-header-label" class="modal-header-label">Modal header</h3>
@@ -43,7 +43,7 @@ lizard.static_url = '{{ STATIC_URL }}';
         </div>
         <div class="modal-footer">
             <button class="btn modal-cancel" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-primary modal-confirm">Continue</button>
+            <button class="btn btn-primary modal-continue">Continue</button>
         </div>
     </div>
 </script>
@@ -55,8 +55,10 @@ lizard.static_url = '{{ STATIC_URL }}';
 </ul>
 {% endblock %}
 
-{# block main-area #}
+{% block main-area %}
+<div id="full-content">
 {% block content %}
 <div>base</div>
 {% endblock %}
-{# endblock #}
+</div>
+{% endblock %}

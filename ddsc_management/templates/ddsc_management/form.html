@@ -1,23 +1,33 @@
 {% load i18n %}
-<div>
-    <form action="{{ action }}" method="post" class="form-horizontal">{% csrf_token %}
-        <fieldset>
-            <legend>{{ form_header|default:_('Form') }}</legend>
-            {% if form.errors %}
-                <div class="alert alert-block fade in">
-                    <a class="close" data-dismiss="alert" href="#">&times;</a>
-                    <p>{% blocktrans count form.errors.items|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
-                </div>
-            {% endif %}
-            <p>
-                {{ form_text|default:_('Please fill in the form below') }}
-            </p>
-            {% for field in form %}
-                {% include 'ddsc_management/form_field.html' %}
-            {% endfor %}
-            <div class="actions">
-                <button type="submit" class="btn btn-primary">{{ submit_button_text|default:_('Submit') }}</button>&nbsp;<button type="reset" class="btn">{% trans 'Reset values' %}</button>
+<form
+    {% if form_id %}id="{{ form_id }}"{% endif %}
+    action="{{ action }}"
+    method="post"
+    class="form-horizontal{% if not disable_dynamic_form %} dynamic-form{% endif %}"
+    >{% csrf_token %}
+    <fieldset>
+        {% if form_header %}
+        <legend>{{ form_header }}</legend>
+        {% endif %}
+        {% if form.errors %}
+            <div class="alert alert-block fade in">
+                <a class="close" data-dismiss="alert" href="#">&times;</a>
+                <p>{% blocktrans count form.errors.items|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+                {% if form.non_field_errors %}
+                    <p>{{ form.non_field_errors }}</p>
+                {% endif %}
             </div>
-        </fieldset>
-    </form>
-</div>
+        {% endif %}
+        <p>
+            {{ form_text|default:_('Please fill in the form below') }}
+        </p>
+        {% for field in form %}
+            {% include 'ddsc_management/form_field.html' %}
+        {% endfor %}
+        {% if not hide_submit_button %}
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">{{ submit_button_text|default:_('Submit') }}</button>&nbsp;<button type="reset" class="btn">{% trans 'Reset values' %}</button>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
