@@ -126,17 +126,19 @@ def get_datatables_records(request, querySet, allowedColitems=[], details_view_n
 
     # Actually add the data
     aaData = []
-    a = querySet.values(*dbColitems)
-    for row in a:
-        rowkeys = row.keys()
-        rowvalues = row.values()
+    rows = querySet.values_list(*dbColitems)
+    for row in rows:
+        #rowkeys = row.keys()
+        #rowvalues = row.values()
         # Requested order of columns can be different than the
         # order in the database, so match them up.
-        rowdata = [row[colname] for colname in dbColitems]
+        #rowdata = [row[colname] for colname in dbColitems]
+        row = list(row)
         if 'details_url' in colitems and details_view_name is not None:
             idx = colitems.index('details_url')
-            rowdata.insert(idx, reverse(details_view_name, kwargs={'pk': row['pk']}))
-        aaData.append(rowdata)
+            pk = row[colitems.index('pk')]
+            row.insert(idx, reverse(details_view_name, kwargs={'pk': pk}))
+        aaData.append(row)
 
     response_dict = {}
     response_dict.update({'aaData': aaData})

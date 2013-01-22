@@ -61,7 +61,7 @@ function init_dynamic_forms () {
             wrapped_replace_with(target, data);
         })
         .error(function (data) {
-            $el.replaceWith('<p class="error">Error while submitting form.</p>');
+            $el.replaceWith('<p class="error">Fout bij het ophalen van het formulier.</p>');
         });
     }
 
@@ -73,7 +73,7 @@ function init_dynamic_forms () {
 
 function add_custom_buttons ($container, data_table, delete_url) {
     if (delete_url) {
-        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled"><i class="icon-trash"></i> Delete selected item(s)</button>');
+        var $delete = $('<button class="btn btn-danger selection-only" disabled="disabled"><i class="icon-trash"></i> Verwijder geselecteerde item(s)</button>');
         $delete.click(function (event) {
             // find out which column contains the PK
             var columns = data_table.fnSettings()["aoColumns"];
@@ -94,8 +94,8 @@ function add_custom_buttons ($container, data_table, delete_url) {
                 // don't do anything if nothing is selected
                 if (selected.length > 0) {
                     show_confirm_modal(
-                        "Are you sure?",
-                        "Are you sure you want to delete the item(s) with ID = " + selected + "?",
+                        "Zeker?",
+                        "Weet u zeker dat u de item(s) met ID = " + selected + " wilt verwijderen?",
                         function () {
                             $.post(
                                 delete_url,
@@ -113,7 +113,7 @@ function add_custom_buttons ($container, data_table, delete_url) {
                                 // });
                             })
                             .error(function (data, textStatus, jqXHR) {
-                                alert('Error while deleting item(s): ' + data.status + ' ' + data.statusText);
+                                alert('Fout bij het verwijderen van item(s): ' + data.status + ' ' + data.statusText);
                             });
                         }
                     );
@@ -191,7 +191,7 @@ function init_data_tables () {
         columns.push({
             "aTargets": ["details_url"],
             "sName": "details_url",
-            "sTitle": "Actions",
+            "sTitle": "Acties",
             "bSortable": false,
             //"sClass": "no-select",
             "mRender": function (data, type, full) {
@@ -347,7 +347,7 @@ function create_inline_form_modal (header, app_label, model_name, field, form_ur
         $modal.find('.modal-continue').click(continue_inline_form_modal);
     })
     .error(function (data) {
-        $modal.find('.modal-body').html('<p class="error">Error loading form.</p>');
+        $modal.find('.modal-body').html('<p class="error">Fout bij het laden van formulier.</p>');
     })
     .complete(function () {
         $modal.modal({
@@ -372,7 +372,7 @@ function init_inline_forms () {
             var model_name = $(this).data('inline-add-model-name');
             var field = $(this).data('inline-add-field');
             var form_url = $(this).data('inline-add-form-url');
-            create_inline_form_modal('hdr', app_label, model_name, field, form_url);
+            create_inline_form_modal('Voeg ' + field + ' toe', app_label, model_name, field, form_url);
         }
     );
 }

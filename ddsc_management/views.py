@@ -140,7 +140,7 @@ class SourcesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyP
 
 class SourcesApiView(ModelDataSourceView):
     model = models.Source
-    allowed_columns = ['name', 'source_type', 'manufacturer']
+    allowed_columns = ['name', 'source_type', 'manufacturer__name']
     details_view_name = 'ddsc_management.sources.detail'
 
     def list(self):

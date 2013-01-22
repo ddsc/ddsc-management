@@ -157,7 +157,7 @@ class SelectWithInlineFormPopup(widgets.Select):
         output.append(u' data-inline-add-field="' + unicode(field) + u'"')
         output.append(u' data-inline-add-form-url="' + unicode(form_url) + u'"')
 
-        output.append(u'><i class="icon-plus-sign"></i></button>')
+        output.append(u'><i class="icon-plus"></i></button>')
         output.append(u'</div>')
         html = mark_safe(u'\n'.join(output))
         return html

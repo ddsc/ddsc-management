@@ -1,4 +1,5 @@
 {% extends "lizard_ui/lizardbase.html" %}
+{% load i18n %}
 
 {% block css %}
 {{ block.super }}
@@ -42,8 +43,8 @@ lizard.static_url = '{{ STATIC_URL }}';
             <p>Modal body</p>
         </div>
         <div class="modal-footer">
-            <button class="btn modal-cancel" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-primary modal-continue">Continue</button>
+            <button class="btn modal-cancel" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
+            <button class="btn btn-primary modal-continue">{% trans 'Continue' %}</button>
         </div>
     </div>
 </script>

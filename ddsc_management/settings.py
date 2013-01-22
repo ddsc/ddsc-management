@@ -81,8 +81,8 @@ LANGUAGE_CODE = 'nl-NL'
 # For at-runtime language switching.  Note: they're shown in reverse order in
 # the interface!
 LANGUAGES = (
-#    ('en', 'English'),
     ('nl', 'Nederlands'),
+    ('en', 'English'),
 )
 # If you set this to False, Django will make some optimizations so as not to
 # load the internationalization machinery.
