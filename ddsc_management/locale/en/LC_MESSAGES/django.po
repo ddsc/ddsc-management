@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-22 18:43+0100\n"
+"POT-Creation-Date: 2013-01-22 18:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Manually import data from csv files."
 msgstr ""
 
-#: views.py:59
+#: views.py:59 views.py:103
 msgid "Timeseries"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgid "Manage timeseries."
 msgstr ""
 
 #: views.py:65 views.py:123
-msgid "Manage sources"
+msgid "Sources"
 msgstr ""
 
 #: views.py:66
@@ -57,7 +57,7 @@ msgid "Manage sources."
 msgstr ""
 
 #: views.py:71 views.py:163
-msgid "Manage locations"
+msgid "Locations"
 msgstr ""
 
 #: views.py:72
@@ -65,15 +65,11 @@ msgid "Manage locations."
 msgstr ""
 
 #: views.py:77 views.py:167
-msgid "Manage access groups"
+msgid "Access groups"
 msgstr ""
 
 #: views.py:78
 msgid "Manage who has access to your data."
-msgstr ""
-
-#: views.py:103
-msgid "Manage timeseries"
 msgstr ""
 
 #: templates/ddsc_management/base.html:46

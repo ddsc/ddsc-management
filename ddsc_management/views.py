@@ -62,19 +62,19 @@ class BaseView(UiView):
                 icon=''
             ),
             Action(
-                name=_('Manage sources'),
+                name=_('Sources'),
                 description=_('Manage sources.'),
                 url=reverse('ddsc_management.sources.list'),
                 icon=''
             ),
             Action(
-                name=_('Manage locations'),
+                name=_('Locations'),
                 description=_('Manage locations.'),
                 url=reverse('ddsc_management.locations'),
                 icon=''
             ),
             Action(
-                name=_('Manage access groups'),
+                name=_('Access groups'),
                 description=_('Manage who has access to your data.'),
                 url=reverse('ddsc_management.access_groups'),
                 icon=''
@@ -100,7 +100,7 @@ class ImportView(BaseView):
 
 class TimeseriesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
     template_name = 'ddsc_management/timeseries.html'
-    page_title = _('Manage timeseries')
+    page_title = _('Timeseries')
     form_class = forms.TimeseriesForm
     model = models.Timeseries
 
@@ -120,7 +120,7 @@ class TimeseriesApiView(ModelDataSourceView):
 
 class SourcesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
     template_name = 'ddsc_management/sources.html'
-    page_title = _('Manage sources')
+    page_title = _('Sources')
     form_class = forms.SourceForm
     model = models.Source
 
@@ -160,8 +160,8 @@ class SourcesApiView(ModelDataSourceView):
 
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'
-    page_title = _('Manage locations')
+    page_title = _('Locations')
 
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
-    page_title = _('Manage access groups')
+    page_title = _('Access groups')
