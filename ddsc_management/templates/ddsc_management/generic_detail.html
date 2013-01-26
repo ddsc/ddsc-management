@@ -1,6 +1,6 @@
 {% load url from future %}
 {% load i18n %}
-
+<legend>Detail view of {{ view.instance }}</legend>
 <table class="table">
 {% for instance in view.data %}
     {% for field, value in instance.fields.items %}
