@@ -37,14 +37,26 @@ lizard.static_url = '{{ STATIC_URL }}';
     <div class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-header-label" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 id="modal-header-label" class="modal-header-label">Modal header</h3>
+            <h3 class="modal-header-label"></h3>
         </div>
         <div class="modal-body">
-            <p>Modal body</p>
         </div>
         <div class="modal-footer">
             <button class="btn modal-cancel" data-dismiss="modal" aria-hidden="true">{% trans 'Cancel' %}</button>
             <button class="btn btn-primary modal-continue">{% trans 'Continue' %}</button>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="add-edit-detail-template">
+    <div class="row">
+        <div class="span12 content">
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12 buttons">
+            <button class="btn btn-info edit"><i class="icon-edit"></i> {% trans 'Edit item' %}</button>
+            <button class="btn btn-info add"><i class="icon-plus"></i> {% trans 'Add a new item' %}</button>
+            <button class="btn cancel"><i class="icon-ban-circle"></i> {% trans 'Cancel' %}</button>
         </div>
     </div>
 </script>

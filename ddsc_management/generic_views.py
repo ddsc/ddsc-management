@@ -18,6 +18,7 @@ from django.views.generic.base import TemplateView
 from django.views.decorators.cache import never_cache
 from django.utils.encoding import smart_str
 from django.db.models.loading import get_model
+from django.template import loader, Context, RequestContext
 
 from lizard_ui.views import ViewContextMixin
 
@@ -28,10 +29,12 @@ from ddsc_core import models
 logger = logging.getLogger(__name__)
 
 class JsonView(View):
+    request = None
+
     @method_decorator(never_cache)
     def get(self, request, *args, **kwargs):
-        if not request.is_ajax():
-            logger.warn('Request sent to JsonView does not seem to be Ajax')
+        self.request = request
+        self.as_html = not request.is_ajax()
         data = self.get_json(request, *args, **kwargs)
         if isinstance(data, HttpResponse):
             return data
@@ -41,8 +44,8 @@ class JsonView(View):
 
     @method_decorator(never_cache)
     def post(self, request, *args, **kwargs):
-        if not request.is_ajax():
-            logger.warn('Request sent to JsonView does not seem to be Ajax')
+        self.request = request
+        self.as_html = not request.is_ajax()
         data = self.post_json(request, *args, **kwargs)
         if isinstance(data, HttpResponse):
             return data
@@ -52,10 +55,8 @@ class JsonView(View):
 
 class DataSourceView(JsonView):
     action = 'list'
-    request = None
 
     def get_json(self, request, *args, **kwargs):
-        self.request = request
         if self.action == 'list':
             data = self.list()
         else:
@@ -63,7 +64,6 @@ class DataSourceView(JsonView):
         return data
 
     def post_json(self, request, *args, **kwargs):
-        self.request = request
         if self.action == 'delete':
             pks = self.request.POST.getlist('pks[]')
             data = self.delete(pks)
@@ -82,14 +82,13 @@ class DataSourceView(JsonView):
 class ModelDataSourceView(DataSourceView):
     model = None
     allowed_columns = []
-    details_view_name = None
 
     def query_set(self):
         return self.model.objects.all()
 
     def list(self):
         query_set = self.query_set()
-        return get_datatables_records(self.request, query_set, self.allowed_columns, self.details_view_name)
+        return get_datatables_records(self.request, query_set, self.allowed_columns)
 
     def delete(self, pks):
         deleted = []
@@ -149,7 +148,7 @@ class MyFormMixin(object):
             })
         return kwargs
 
-    def _init_form(self, request, *args, **kwargs):
+    def init(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         self.form = self.get_form(form_class)
 
@@ -163,8 +162,6 @@ class MyProcessFormMixin(object):
     Handle the form when set on a View.
     Load before MyFormMixin.
     """
-    success_url = None
-
     def get(self, request, *args, **kwargs):
         self._init_form(request, *args, **kwargs)
         return super(MyProcessFormMixin, self).get(request, *args, **kwargs)
@@ -182,18 +179,18 @@ class MyProcessFormMixin(object):
         return self.post(*args, **kwargs)
 
     def form_valid(self, form):
-        raise NotImplementedError()
+        if form.instance.pk is None:
+            updating = False
+        else:
+            updating = True
+        form.save()
+        if updating:
+            return HttpResponse(content="item updated", status=200)
+        else:
+            return HttpResponse(content="item created", status=201)
 
     def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def get_success_url(self):
-        if self.success_url:
-            url = self.success_url
-        else:
-            raise ImproperlyConfigured(
-                "No URL to redirect to. Provide a success_url.")
-        return url
+        return self.render_to_response(self.get_context_data(form=form), status=400)
 
 class MySingleObjectMixin(object):
     """
@@ -202,65 +199,38 @@ class MySingleObjectMixin(object):
     """
     pk = None
     model = None
-    object = None
+    instance = None
 
-    def get_object(self):
-        if self.pk is None:
-            return
+    def get_instance(self):
         return self.query_set().get(pk=self.pk)
 
     def query_set(self):
         return self.model.objects.all()
 
-    def get_initial(self):
-        """
-        Returns the initial data to use for forms on this view.
-        """
-        initial = super(MySingleObjectMixin, self).get_initial()
-        if self.object:
-            initial.update({'name': self.object.name})
-        return initial
-
-    def _init_object(self, request, *args, **kwargs):
-        self.pk = kwargs.get('pk', None)
-        if self.pk is not None:
-            self.object = self.get_object()
-
-    def get(self, request, *args, **kwargs):
-        self._init_object(request, *args, **kwargs)
-        return super(MySingleObjectMixin, self).get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self._init_object(request, *args, **kwargs)
-        return super(MySingleObjectMixin, self).post(request, *args, **kwargs)
+    def init(self, request, *args, **kwargs):
+        self.pk = request.GET.get('pk', None)
+        if pk is not None:
+            self.instance = self.get_instance()
 
     def get_context_data(self, **kwargs):
         context = super(MySingleObjectMixin, self).get_context_data(**kwargs)
         context['pk'] = self.pk
-        context['object'] = self.object
+        context['instance'] = self.instance
         return context
-
-class MySingleObjectFormMixin(object):
-    """
-    Combines an object set on the view with the form.
-    """
-
-    def get_form_class(self):
-        """
-        Returns the form class to use in this view
-        """
-        if self.form_class:
-            return self.form_class
-        else:
-            return model_forms.modelform_factory(self.model)
 
     def get_form_kwargs(self):
         """
         Returns the keyword arguments for instanciating the form.
         """
-        kwargs = super(MySingleObjectFormMixin, self).get_form_kwargs()
-        kwargs.update({'instance': self.object})
+        kwargs = super(MySingleObjectMixin, self).get_form_kwargs()
+        kwargs.update({'instance': self.instance})
         return kwargs
+
+class MySingleObjectFormMixin(object):
+    """
+    Combines an object set on the view with the form.
+    """
+    pass
 
 class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
     app_label = None
@@ -271,19 +241,21 @@ class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
     model_to_form = {
         models.Manufacturer: forms.ManufacturerForm
     }
+    from_modal = False
 
-    def _init_related_model(self, request, app_label, model_name, field, *args, **kwargs):
+    def _init_inline_form_view(self, request, app_label, model_name, field, *args, **kwargs):
+        self.from_modal = request.GET.get('from_modal', 'False') == 'True'
         self.app_label = app_label
         self.model_name = model_name
         self.field = field
         self.related_model = self.get_related_model()
 
     def get(self, request, *args, **kwargs):
-        self._init_related_model(request, *args, **kwargs)
+        self._init_inline_form_view(request, *args, **kwargs)
         return super(InlineFormView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self._init_related_model(request, *args, **kwargs)
+        self._init_inline_form_view(request, *args, **kwargs)
         return super(InlineFormView, self).post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -292,6 +264,7 @@ class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
         context['model_name'] = self.model_name
         context['field'] = self.field
         context['related_model'] = self.related_model
+        context['from_modal'] = self.from_modal
         return context
 
     def get_related_model(self):
@@ -315,6 +288,35 @@ class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
     def get_form_class(self):
         return self.model_to_form[self.related_model]
 
-    def form_valid(self, form):
-        form.save()
-        return HttpResponse(status=201)
+class MyTemplateMixin(object):
+    def render_to_html(self):
+        context = self.get_context_data()
+        request_context = RequestContext(self.request, context)
+        template = loader.get_template(self.template_name)
+        html = template.render(request_context)
+        return html
+
+    def get_context_data(self, **kwargs):
+        c = {
+            'params': kwargs,
+            'view': self,
+        }
+        return c
+
+class MyModelClassMixin(object):
+    model_name_to_class = {}
+    model_name = None
+    model = None
+
+    def init(self, request, *args, **kwargs):
+        self.model_name = kwargs['model_name']
+        self.model = self.get_model()
+
+    def find_model(self):
+        app_label = 'ddsc_core'
+        # find the Model class
+        model_class = get_model(app_label, self.model_name)
+        return model_class
+
+    def get_model(self):
+        return self.model_name_to_class[self.model_name]

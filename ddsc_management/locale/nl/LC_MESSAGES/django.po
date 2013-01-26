@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-22 18:56+0100\n"
+"POT-Creation-Date: 2013-01-23 12:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,71 +17,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: views.py:41 views.py:91
+#: views.py:45 views.py:95
 msgid "Summary"
 msgstr "Overzicht"
 
-#: views.py:42
+#: views.py:46
 msgid "View summarized infomation."
 msgstr "Bekijk overzicht."
 
-#: views.py:47 views.py:95
+#: views.py:51 views.py:99
 msgid "Alarms"
 msgstr "Alarmen"
 
-#: views.py:48
+#: views.py:52
 msgid "Manage alarms."
 msgstr "Beheer alarmen."
 
-#: views.py:53 views.py:99
+#: views.py:57 views.py:103
 msgid "Import data"
 msgstr "Importeer data"
 
-#: views.py:54
+#: views.py:58
 msgid "Manually import data from csv files."
 msgstr "Importeer data handmatig uit csv bestanden."
 
-#: views.py:59 views.py:103
+#: views.py:63 views.py:107
 msgid "Timeseries"
 msgstr "Tijdreeksen"
 
-#: views.py:60
+#: views.py:64
 msgid "Manage timeseries."
 msgstr "Beheer tijdreeksen."
 
-#: views.py:65 views.py:123
+#: views.py:69 views.py:127
 msgid "Sources"
 msgstr "Bronnen"
 
-#: views.py:66
+#: views.py:70
 msgid "Manage sources."
 msgstr "Beheer bronnen."
 
-#: views.py:71 views.py:163
+#: views.py:75 views.py:153
 msgid "Locations"
 msgstr "Lokaties"
 
-#: views.py:72
+#: views.py:76
 msgid "Manage locations."
 msgstr "Beheer lokaties."
 
-#: views.py:77 views.py:167
+#: views.py:81 views.py:157
 msgid "Access groups"
 msgstr "Toegangsgroepen"
 
-#: views.py:78
+#: views.py:82
 msgid "Manage who has access to your data."
 msgstr "Beheer wie toegang heeft tot uw data."
 
-#: templates/ddsc_management/base.html:46
-#: templates/ddsc_management/sources.html:64
-#: templates/ddsc_management/sources.html:67
-#: templates/ddsc_management/timeseries.html:59
-#: templates/ddsc_management/timeseries.html:62
+#: views.py:281
+msgid "Add a {model_name}"
+msgstr "Voeg een {model_name} toe"
+
+#: views.py:283
+msgid "Edit a {model_name}"
+msgstr "Wijzig een {model_name}"
+
+#: templates/ddsc_management/base.html:45
+#: templates/ddsc_management/sources.html:65
+#: templates/ddsc_management/sources.html:68
+#: templates/ddsc_management/timeseries.html:60
+#: templates/ddsc_management/timeseries.html:63
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: templates/ddsc_management/base.html:47
+#: templates/ddsc_management/base.html:46
 msgid "Continue"
 msgstr "Doorgaan"
 
@@ -103,54 +111,54 @@ msgstr "Verzenden"
 msgid "Reset values"
 msgstr "Reset"
 
-#: templates/ddsc_management/sources.html:8
+#: templates/ddsc_management/sources.html:9
 msgid "All available sources"
 msgstr "Beschikbare bronnen"
 
-#: templates/ddsc_management/sources.html:17
-#: templates/ddsc_management/timeseries.html:21
+#: templates/ddsc_management/sources.html:18
+#: templates/ddsc_management/timeseries.html:22
 msgid "Name"
 msgstr "Naam"
 
-#: templates/ddsc_management/sources.html:21
+#: templates/ddsc_management/sources.html:22
 msgid "Source type"
 msgstr "Type bron"
 
-#: templates/ddsc_management/sources.html:25
+#: templates/ddsc_management/sources.html:26
 msgid "Manufacturer"
 msgstr "Fabrikant"
 
-#: templates/ddsc_management/sources.html:38
-#: templates/ddsc_management/timeseries.html:34
+#: templates/ddsc_management/sources.html:39
+#: templates/ddsc_management/timeseries.html:35
 msgid "Details"
 msgstr "Details"
 
-#: templates/ddsc_management/sources.html:43
-#: templates/ddsc_management/timeseries.html:38
+#: templates/ddsc_management/sources.html:44
+#: templates/ddsc_management/timeseries.html:39
 msgid "Add item"
 msgstr "Voeg item toe"
 
-#: templates/ddsc_management/sources.html:48
-#: templates/ddsc_management/sources.html:58
-#: templates/ddsc_management/timeseries.html:43
-#: templates/ddsc_management/timeseries.html:53
+#: templates/ddsc_management/sources.html:49
+#: templates/ddsc_management/sources.html:59
+#: templates/ddsc_management/timeseries.html:44
+#: templates/ddsc_management/timeseries.html:54
 msgid "Edit item"
 msgstr "Bewerk item"
 
-#: templates/ddsc_management/sources.html:52
-#: templates/ddsc_management/timeseries.html:47
+#: templates/ddsc_management/sources.html:53
+#: templates/ddsc_management/timeseries.html:48
 msgid "No item selected."
 msgstr "Geen item geselecteerd."
 
-#: templates/ddsc_management/sources.html:61
-#: templates/ddsc_management/timeseries.html:56
+#: templates/ddsc_management/sources.html:62
+#: templates/ddsc_management/timeseries.html:57
 msgid "Add a new item"
 msgstr "Voeg item toe"
 
-#: templates/ddsc_management/timeseries.html:8
+#: templates/ddsc_management/timeseries.html:9
 msgid "All available timeseries"
 msgstr "Alle beschikbare tijdreeksen"
 
-#: templates/ddsc_management/timeseries.html:17
+#: templates/ddsc_management/timeseries.html:18
 msgid "Code"
 msgstr "Code"

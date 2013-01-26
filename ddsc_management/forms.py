@@ -142,19 +142,18 @@ class SelectWithInlineFormPopup(widgets.Select):
         output.append(u'<button class="btn" type="button"')
 
         model_class = self.attrs['model']
-        app_label = model_class._meta.app_label
         model_name = model_class._meta.verbose_name
         field = self.attrs['field'] if 'field' in self.attrs else name
+        related_model_class = self.attrs['related_model']
+        related_model_name = related_model_class._meta.verbose_name
 
-        form_url = reverse('ddsc_management.inline_form', kwargs={
-            'app_label': app_label,
-            'model_name': model_name,
-            'field': field,
+        form_url = reverse('ddsc_management.dynamic_form.add', kwargs={
+            'model_name': related_model_name,
         })
 
-        output.append(u' data-inline-add-app-label="' + unicode(app_label) + u'"')
         output.append(u' data-inline-add-model-name="' + unicode(model_name) + u'"')
         output.append(u' data-inline-add-field="' + unicode(field) + u'"')
+        output.append(u' data-inline-add-related-model-name="' + unicode(related_model_name) + u'"')
         output.append(u' data-inline-add-form-url="' + unicode(form_url) + u'"')
 
         output.append(u'><i class="icon-plus"></i></button>')
@@ -175,7 +174,8 @@ class SourceForm(forms.ModelForm):
 #            ),
             'manufacturer': SelectWithInlineFormPopup(attrs={
                 'field': 'manufacturer',
-                'model': models.Source
+                'model': models.Source,
+                'related_model': models.Manufacturer
             }),
         }
 #    manufacturer = forms.ModelChoiceField(
@@ -219,6 +219,13 @@ class TimeseriesForm(forms.ModelForm):
             'measuring_method',
             'processing_method',
         ]
+        widgets = {
+            'source': SelectWithInlineFormPopup(attrs={
+                'field': 'source',
+                'model': models.Timeseries,
+                'related_model': models.Source
+            }),
+        }
 
     #code = forms.CharField(max_length=30, label=_('Code'), required=True)
     #name = forms.CharField(max_length=30, label=_('Name'), required=True)

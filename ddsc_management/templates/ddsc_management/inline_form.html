@@ -1,5 +1,6 @@
+{% load url from future %}
 {% load i18n %}
-{% url ddsc_management.inline_form app_label=app_label model_name=model_name field=field as action %}
-{% with form=form form_id='inline-form' action=action hide_submit_button='true' %}
+{% url 'ddsc_management.inline_form' app_label=app_label model_name=model_name field=field as form_action %}
+{% with form=form form_id='inline-form' action=form_action hide_submit_button='true' %}
 {% include 'ddsc_management/form.html' %}
 {% endwith %}

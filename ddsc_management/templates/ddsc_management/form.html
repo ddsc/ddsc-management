@@ -6,7 +6,7 @@
     class="form-horizontal{% if not disable_dynamic_form %} dynamic-form{% endif %}"
     >{% csrf_token %}
     <fieldset>
-        {% if form_header %}
+        {% if form_header and not hide_header %}
         <legend>{{ form_header }}</legend>
         {% endif %}
         {% if form.errors %}

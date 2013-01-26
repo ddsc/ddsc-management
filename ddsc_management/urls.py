@@ -34,21 +34,22 @@ urlpatterns = patterns(
     # Sources
     url(r'^sources/$',
         views.SourcesView.as_view(action='list'),   name='ddsc_management.sources.list'),
-    url(r'^sources/add/$',
-        views.SourcesView.as_view(action='add'),    name='ddsc_management.sources.add'),
-    url(r'^sources/(?P<pk>\d+)/$',
-        views.SourcesView.as_view(action='detail'), name='ddsc_management.sources.detail'),
-    url(r'^sources/(?P<pk>\d+)/edit/$',
-        views.SourcesView.as_view(action='edit'),   name='ddsc_management.sources.edit'),
 
+    # Sources API
     url(r'^api/sources/$',
         views.SourcesApiView.as_view(action='list'),   name='ddsc_management.api.sources.list'),
     url(r'^api/sources/delete/$',
         views.SourcesApiView.as_view(action='delete'), name='ddsc_management.api.sources.delete'),
 
     # Inline forms
-    url(r'^inline_form/(?P<app_label>\w+)/(?P<model_name>\w+)/(?P<field>\w+)/$',
-        generic_views.InlineFormView.as_view(), name='ddsc_management.inline_form'),
+    url(r'^dynamic_form/(?P<model_name>\w+)/add/$',
+        views.DynamicFormView.as_view(action='add'), name='ddsc_management.dynamic_form.add'),
+    url(r'^dynamic_form/(?P<model_name>\w+)/edit/$',
+        views.DynamicFormView.as_view(action='edit'), name='ddsc_management.dynamic_form.edit'),
+
+    # Simple dump detail view
+    url(r'^generic_detail/(?P<model_name>\w+)/$',
+        views.GenericDetailView.as_view(), name='ddsc_management.generic_detail'),
 
     url(r'^locations/$', views.LocationsView.as_view(), name='ddsc_management.locations'),
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),

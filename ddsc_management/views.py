@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import logging
+from urllib import urlencode
 
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
@@ -12,7 +13,11 @@ from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import View
+from django.views.generic.base import TemplateResponseMixin
 from django.views.decorators.cache import never_cache
+from django.db.models.loading import get_model
+from django.template import loader, Context, RequestContext
+from django.core import serializers
 
 from lizard_ui.views import UiView
 from lizard_ui.layout import Action
@@ -21,7 +26,16 @@ from ddsc_core import models
 
 from ddsc_management import forms
 from ddsc_management.utils import get_datatables_records
-from ddsc_management.generic_views import MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, ModelDataSourceView, MySingleObjectFormMixin
+from ddsc_management.generic_views import (
+    JsonView,
+    MySingleObjectMixin,
+    MyFormMixin,
+    MyProcessFormMixin,
+    ModelDataSourceView,
+    MySingleObjectFormMixin,
+    MyTemplateMixin,
+    MyModelClassMixin
+)
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +124,7 @@ class TimeseriesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, 
 class TimeseriesApiView(ModelDataSourceView):
     model = models.Timeseries
     allowed_columns = ['code', 'name']
-    details_view_name = 'ddsc_management.timeseries.detail'
+    detail_view_name = 'ddsc_management.timeseries.detail'
 
     def query_set(self):
         return self.model.objects_nosecurity.all()
@@ -118,30 +132,13 @@ class TimeseriesApiView(ModelDataSourceView):
     def list(self):
         return super(TimeseriesApiView, self).list()
 
-class SourcesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
+class SourcesView(BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Sources')
-    form_class = forms.SourceForm
-    model = models.Source
-
-    def form_valid(self, form):
-        form.save()
-#        if self.action == 'edit':
-#            object = self.object
-#        elif self.action == 'add':
-#            object = self.model()
-#        object.name = form.data['name']
-#        object.source_type = form.data['source_type']
-#        object.manufacturer = models.Manufacturer.objects.get(pk=form.data['manufacturer'])
-#        object.details = form.data['details']
-#        object.save()
-#        self.success_url = reverse('ddsc_management.sources.detail', kwargs={'pk': object.pk})
-        return HttpResponse(status=201)
 
 class SourcesApiView(ModelDataSourceView):
     model = models.Source
     allowed_columns = ['name', 'source_type', 'manufacturer__name']
-    details_view_name = 'ddsc_management.sources.detail'
 
     def list(self):
         # DEBUG create a few objects if none exist
@@ -165,3 +162,138 @@ class LocationsView(BaseView):
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
     page_title = _('Access groups')
+
+class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTemplateMixin, JsonView):
+    model_name = None
+    action = None
+    pk = None
+    model = None
+    instance = None
+    template_name = 'ddsc_management/dynamic_form.html'
+    model_name_to_form = {
+        'manufacturer': forms.ManufacturerForm,
+        'source': forms.SourceForm,
+        'timeseries': forms.TimeseriesForm,
+    }
+    model_name_to_class = {
+        'manufacturer': models.Manufacturer,
+        'source': models.Source,
+        'timeseries': models.Timeseries,
+    }
+    for_modal = False
+
+    def init(self, request, *args, **kwargs):
+        MyModelClassMixin.init(self, request, *args, **kwargs)
+        if self.action == 'edit':
+            MySingleObjectMixin.init(self, request, *args, **kwargs)
+        MyFormMixin.init(self, request, *args, **kwargs)
+        self.for_modal = request.GET.get('for_modal', 'False') == 'True'
+
+        # retrieve model instance when in edit mode
+        if self.action == 'edit':
+            self.instance = self.model.objects.get(pk=self.pk)
+
+    def get_json(self, request, *args, **kwargs):
+        self.init(request, *args, **kwargs)
+
+        html = self.render_to_html()
+        result = {
+            'html': html,
+            'success': True
+        }
+
+        if self.as_html:
+            # just return the html, so it can be viewed in the browser
+            return HttpResponse(content=result['html'])
+        else:
+            return result
+
+    def post_json(self, request, *args, **kwargs):
+        self.init(request, *args, **kwargs)
+
+        if self.form.is_valid():
+            instance = self.form_valid()
+            result = {
+                'html': '<p>OK, saved as {} with pk={}</p>'.format(str(instance), instance.pk),
+                'success': True,
+                'pk': instance.pk,
+                'name': str(instance),
+            }
+        else:
+            html = self.render_to_html()
+            result = {
+                'html': html,
+                'success': False,
+            }
+
+        if self.as_html:
+            # just return the html, so it can be viewed in the browser
+            return HttpResponse(content=result['html'])
+        else:
+            return result
+
+    def form_valid(self):
+        instance = self.form.save()
+        return instance
+
+    def get_form_kwargs(self):
+        kwargs = super(DynamicFormView, self).get_form_kwargs()
+        if self.action == 'edit':
+            kwargs.update({'instance': self.instance})
+        return kwargs
+
+    def get_form_class(self):
+        return self.model_name_to_form[self.model_name]
+
+    def form_action_url(self):
+        '''
+        Determine URL in code, since Django's {% url %} template tag is
+        lacking when dealing with query strings.
+        '''
+        qs = urlencode({'pk': self.pk, 'for_modal': str(self.for_modal)})
+        if self.action == 'add':
+            return reverse('ddsc_management.dynamic_form.add', kwargs={'model_name': self.model_name}) + '?' + qs
+        elif self.action == 'edit':
+            return reverse('ddsc_management.dynamic_form.edit', kwargs={'model_name': self.model_name}) + '?' + qs
+
+    def form_id(self):
+        '''
+        Returns a nicely formatted HTML element ID.
+        '''
+        return 'form-{}-{}'.format(self.action, self.model_name)
+
+    def form_header(self):
+        '''
+        Returns a suitable, translated header for the form.
+        '''
+        if self.action == 'add':
+            header = _('Add a {model_name}')
+        elif self.action == 'edit':
+            header = _('Edit a {model_name}')
+        return header.format(model_name=self.model._meta.verbose_name)
+
+class GenericDetailView(MyModelClassMixin, MySingleObjectMixin, MyTemplateMixin, JsonView):
+    template_name = 'ddsc_management/generic_detail.html'
+    model_name_to_class = {
+        'manufacturer': models.Manufacturer,
+        'source': models.Source,
+        'timeseries': models.Timeseries,
+    }
+
+    def get_json(self, request, *args, **kwargs):
+        MyModelClassMixin.init(self, request, *args, **kwargs)
+        MySingleObjectMixin.init(self, request, *args, **kwargs)
+
+        self.data = serializers.serialize("python", [self.instance])
+
+        html = self.render_to_html()
+
+        result = {
+            'html': html
+        }
+
+        if self.as_html:
+            # just return the html, so it can be viewed in the browser
+            return HttpResponse(content=result['html'])
+        else:
+            return result
