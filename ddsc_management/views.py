@@ -123,9 +123,6 @@ class TimeseriesApiView(ModelDataSourceView):
     def query_set(self):
         return self.model.objects_nosecurity.all()
 
-    def list(self):
-        return super(TimeseriesApiView, self).list()
-
 class SourcesView(BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Sources')
@@ -157,6 +154,9 @@ class LocationsApiView(ModelDataSourceView):
     model = models.Location
     allowed_columns = ['code', 'name']
 
+    def query_set(self):
+        return self.model.objects_nosecurity.all()
+
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
     page_title = _('Access groups')
@@ -168,11 +168,13 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
         'manufacturer': forms.ManufacturerForm,
         'source': forms.SourceForm,
         'timeseries': forms.TimeseriesForm,
+        'location': forms.LocationForm,
     }
     model_name_to_class = {
         'manufacturer': models.Manufacturer,
         'source': models.Source,
         'timeseries': models.Timeseries,
+        'location': models.Location,
     }
     for_modal = False
 
@@ -182,10 +184,6 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
             MySingleObjectMixin.init(self, request, *args, **kwargs)
         MyFormMixin.init(self, request, *args, **kwargs)
         self.for_modal = request.GET.get('for_modal', 'False') == 'True'
-
-        # retrieve model instance when in edit mode
-        if self.action == 'edit':
-            self.instance = self.model.objects.get(pk=self.pk)
 
     def get_json(self, request, *args, **kwargs):
         self.init(request, *args, **kwargs)
@@ -225,6 +223,14 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
             return HttpResponse(content=result['html'])
         else:
             return result
+
+    # DEBUG disable security
+    def query_set(self):
+        if hasattr(self.model, 'objects_nosecurity'):
+            return self.model.objects_nosecurity.all()
+        else:
+            return self.model.objects.all()
+    # /DEBUG
 
     def form_valid(self):
         instance = self.form.save()
@@ -273,7 +279,16 @@ class GenericDetailView(MyModelClassMixin, MySingleObjectMixin, MyTemplateMixin,
         'manufacturer': models.Manufacturer,
         'source': models.Source,
         'timeseries': models.Timeseries,
+        'location': models.Location,
     }
+
+    # DEBUG disable security
+    def query_set(self):
+        if hasattr(self.model, 'objects_nosecurity'):
+            return self.model.objects_nosecurity.all()
+        else:
+            return self.model.objects.all()
+    # /DEBUG
 
     def get_json(self, request, *args, **kwargs):
         MyModelClassMixin.init(self, request, *args, **kwargs)

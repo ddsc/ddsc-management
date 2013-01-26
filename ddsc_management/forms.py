@@ -84,3 +84,7 @@ class TimeseriesForm(forms.ModelForm):
 class ManufacturerForm(forms.ModelForm):
     class Meta:
         model = models.Manufacturer
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = models.Location

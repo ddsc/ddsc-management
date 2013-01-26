@@ -1,1 +1,45 @@
 {% extends "ddsc_management/base.html" %}
+{% load url from future %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+<div class="row-fluid">
+<div class="span6">
+    <legend>{% trans 'All available locations' %}</legend>
+    <table
+        cellpadding="0" cellspacing="0" border="0"
+        class="data-table table table-bordered table-hover"
+        data-url="{% url 'ddsc_management.api.locations.list' %}"
+        data-detail-target="#location-panel"
+        data-delete-url="{% url 'ddsc_management.api.locations.delete' %}"
+        data-columns='[
+            {
+                "sName": "name",
+                "sTitle": "{% trans 'Name' %}"
+            },
+            {
+                "sName": "code",
+                "sTitle": "{% trans 'Code' %}"
+            }
+        ]'>
+        <thead>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+</div>
+<div id="detail-view" class="span6">
+    <div
+        id="location-panel"
+        class="add-edit-detail-panel"
+        data-add-form-url="{% url 'ddsc_management.dynamic_form.add' model_name='location' %}"
+        data-edit-form-url="{% url 'ddsc_management.dynamic_form.edit' model_name='location' %}"
+        data-detail-url="{% url 'ddsc_management.generic_detail' model_name='location' %}"
+    >
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
