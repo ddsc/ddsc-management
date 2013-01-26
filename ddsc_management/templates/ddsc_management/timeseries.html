@@ -11,6 +11,7 @@
         cellpadding="0" cellspacing="0" border="0"
         class="data-table table table-bordered table-hover"
         data-url="{% url 'ddsc_management.api.timeseries.list' %}"
+        data-detail-target="#timeseries-panel"
         data-delete-url="{% url 'ddsc_management.api.timeseries.delete' %}"
         data-columns='[
             {
@@ -30,39 +31,13 @@
     </table>
 </div>
 <div id="detail-view" class="span6">
-    <div class="row">
-        {% if action == 'detail' %}
-            <legend>{% trans 'Details' %}</legend>
-            <h2>{{ object.name }}</h2>
-        {% elif action == 'add' %}
-            {% url 'ddsc_management.timeseries.add' as form_action %}
-            {% with form=form form_id='add-form' form_header=_('Add item') action=form_action %}
-            {% include 'ddsc_management/form.html' %}
-            {% endwith %}
-        {% elif action == 'edit' %}
-            {% url 'ddsc_management.timeseries.edit' pk=pk as form_action %}
-            {% with form=form form_id='edit-form' form_header=_('Edit item') action=form_action %}
-            {% include 'ddsc_management/form.html' %}
-            {% endwith %}
-        {% elif action == 'list' %}
-            <p>{% trans 'No item selected.' %}</p>
-        {% endif %}
-    </div>
-    <div class="row">
-        <div class="span12">
-            {% if action == 'detail' %}
-            <a href="{% url 'ddsc_management.timeseries.edit' pk=pk %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-edit"></i> {% trans 'Edit item' %}</a>
-            {% endif %}
-            {% if action == 'detail' or action == 'list' %}
-            <a href="{% url 'ddsc_management.timeseries.add' %}" class="btn btn-info dynamic-link" data-target="detail-view"><i class="icon-plus"></i> {% trans 'Add a new item' %}</a>
-            {% endif %}
-            {% if action == 'edit' %}
-                <a href="{% url 'ddsc_management.timeseries.detail' pk=pk %}" class="btn dynamic-link" data-target="detail-view"><i class="icon-ban-circle"></i> {% trans 'Cancel' %}</a>
-            {% endif %}
-            {% if action == 'add' %}
-                <a href="{% url 'ddsc_management.timeseries.list' %}" class="btn dynamic-link" data-target="detail-view"><i class="icon-ban-circle"></i> {% trans 'Cancel' %}</a>
-            {% endif %}
-        </div>
+    <div
+        id="timeseries-panel"
+        class="add-edit-detail-panel"
+        data-add-form-url="{% url 'ddsc_management.dynamic_form.add' model_name='timeseries' %}"
+        data-edit-form-url="{% url 'ddsc_management.dynamic_form.edit' model_name='timeseries' %}"
+        data-detail-url="{% url 'ddsc_management.generic_detail' model_name='timeseries' %}"
+    >
     </div>
 </div>
 </div>

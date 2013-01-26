@@ -20,12 +20,8 @@ urlpatterns = patterns(
 
     # Timeseries
     url(r'^timeseries/$',
-        views.TimeseriesView.as_view(action='list'),   name='ddsc_management.timeseries.list'),
-    url(r'^timeseries/add/$',
-        views.TimeseriesView.as_view(action='add'),    name='ddsc_management.timeseries.add'),
-    url(r'^timeseries/(?P<pk>\d+)/$',
-        views.TimeseriesView.as_view(action='detail'), name='ddsc_management.timeseries.detail'),
-
+        views.TimeseriesView.as_view(action='list'),   name='ddsc_management.timeseries'),
+    # Timeseries API
     url(r'^api/timeseries/$',
         views.TimeseriesApiView.as_view(action='list'),   name='ddsc_management.api.timeseries.list'),
     url(r'^api/timeseries/delete/$',
@@ -33,13 +29,21 @@ urlpatterns = patterns(
 
     # Sources
     url(r'^sources/$',
-        views.SourcesView.as_view(action='list'),   name='ddsc_management.sources.list'),
-
+        views.SourcesView.as_view(action='list'),   name='ddsc_management.sources'),
     # Sources API
     url(r'^api/sources/$',
         views.SourcesApiView.as_view(action='list'),   name='ddsc_management.api.sources.list'),
     url(r'^api/sources/delete/$',
         views.SourcesApiView.as_view(action='delete'), name='ddsc_management.api.sources.delete'),
+
+    # Locations
+    url(r'^locations/$',
+        views.LocationsView.as_view(), name='ddsc_management.locations'),
+    # Locations API
+    url(r'^api/locations/$',
+        views.LocationsApiView.as_view(action='list'),   name='ddsc_management.api.locations.list'),
+    url(r'^api/locations/delete/$',
+        views.LocationsApiView.as_view(action='delete'), name='ddsc_management.api.locations.delete'),
 
     # Inline forms
     url(r'^dynamic_form/(?P<model_name>\w+)/add/$',
@@ -51,7 +55,6 @@ urlpatterns = patterns(
     url(r'^generic_detail/(?P<model_name>\w+)/$',
         views.GenericDetailView.as_view(), name='ddsc_management.generic_detail'),
 
-    url(r'^locations/$', views.LocationsView.as_view(), name='ddsc_management.locations'),
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),
 
     url(r'^admin/', include(admin.site.urls)),

@@ -198,7 +198,6 @@ class MySingleObjectMixin(object):
     in a form. Load before MyFormMixin when needed.
     """
     pk = None
-    model = None
     instance = None
 
     def get_instance(self):
@@ -209,7 +208,7 @@ class MySingleObjectMixin(object):
 
     def init(self, request, *args, **kwargs):
         self.pk = request.GET.get('pk', None)
-        if pk is not None:
+        if self.pk is not None:
             self.instance = self.get_instance()
 
     def get_context_data(self, **kwargs):
@@ -225,68 +224,6 @@ class MySingleObjectMixin(object):
         kwargs = super(MySingleObjectMixin, self).get_form_kwargs()
         kwargs.update({'instance': self.instance})
         return kwargs
-
-class MySingleObjectFormMixin(object):
-    """
-    Combines an object set on the view with the form.
-    """
-    pass
-
-class InlineFormView(MyFormMixin, MyProcessFormMixin, TemplateView):
-    app_label = None
-    model_name = None
-    field = None
-    related_model = None
-    template_name = 'ddsc_management/inline_form.html'
-    model_to_form = {
-        models.Manufacturer: forms.ManufacturerForm
-    }
-    from_modal = False
-
-    def _init_inline_form_view(self, request, app_label, model_name, field, *args, **kwargs):
-        self.from_modal = request.GET.get('from_modal', 'False') == 'True'
-        self.app_label = app_label
-        self.model_name = model_name
-        self.field = field
-        self.related_model = self.get_related_model()
-
-    def get(self, request, *args, **kwargs):
-        self._init_inline_form_view(request, *args, **kwargs)
-        return super(InlineFormView, self).get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self._init_inline_form_view(request, *args, **kwargs)
-        return super(InlineFormView, self).post(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(InlineFormView, self).get_context_data(**kwargs)
-        context['app_label'] = self.app_label
-        context['model_name'] = self.model_name
-        context['field'] = self.field
-        context['related_model'] = self.related_model
-        context['from_modal'] = self.from_modal
-        return context
-
-    def get_related_model(self):
-        # validate parameters here because they
-        # might be passed on to the template again
-        if self.app_label != 'ddsc_core':
-            raise Exception('Inline form not allowed for app_label {}.'.format(self.app_label))
-        if self.model_name not in ['source']:
-            raise Exception('Inline form not allowed for model {}.'.format(self.model_name))
-
-        # get the Model class and the field meta info
-        model_class = get_model(self.app_label, self.model_name)
-        model_field = model_class._meta.get_field_by_name(self.field)
-
-        if not model_field:
-            raise Exception('Unknown field {} for model {}.'.format(self.field, self.model_name))
-
-        # find out what the foreign key is pointing to
-        return model_field[0].related.parent_model
-
-    def get_form_class(self):
-        return self.model_to_form[self.related_model]
 
 class MyTemplateMixin(object):
     def render_to_html(self):

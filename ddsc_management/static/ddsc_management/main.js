@@ -567,21 +567,25 @@ function init_add_edit_detail_panels () {
                 $content.dynamic_load(detail_url, {pk: current_pk});
                 $add.hide();
                 $edit.show();
+                $cancel.show();
             }
             else if (mode == 'add') {
                 $content.dynamic_load(add_form_url);
                 $add.hide();
                 $edit.hide();
+                $cancel.show();
             }
             else if (mode == 'edit') {
                 $content.dynamic_load(edit_form_url, {pk: current_pk});
                 $add.hide();
                 $edit.hide();
+                $cancel.show();
             }
             else if (mode == 'initial') {
                 $content.html('Geen item geselecteerd.');
                 $add.show();
                 $edit.hide();
+                $cancel.hide();
             }
 
             current_mode = mode;

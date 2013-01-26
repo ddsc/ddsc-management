@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-23 12:29+0100\n"
+"POT-Creation-Date: 2013-01-26 14:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,80 +16,88 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: views.py:45 views.py:95
+#: views.py:54 views.py:104
 msgid "Summary"
 msgstr ""
 
-#: views.py:46
+#: views.py:55
 msgid "View summarized infomation."
 msgstr ""
 
-#: views.py:51 views.py:99
+#: views.py:60 views.py:108
 msgid "Alarms"
 msgstr ""
 
-#: views.py:52
+#: views.py:61
 msgid "Manage alarms."
 msgstr ""
 
-#: views.py:57 views.py:103
+#: views.py:66 views.py:112
 msgid "Import data"
 msgstr ""
 
-#: views.py:58
+#: views.py:67
 msgid "Manually import data from csv files."
 msgstr ""
 
-#: views.py:63 views.py:107
+#: views.py:72 views.py:116
 msgid "Timeseries"
 msgstr ""
 
-#: views.py:64
+#: views.py:73
 msgid "Manage timeseries."
 msgstr ""
 
-#: views.py:69 views.py:127
+#: views.py:78 views.py:131
 msgid "Sources"
 msgstr ""
 
-#: views.py:70
+#: views.py:79
 msgid "Manage sources."
 msgstr ""
 
-#: views.py:75 views.py:153
+#: views.py:84 views.py:154
 msgid "Locations"
 msgstr ""
 
-#: views.py:76
+#: views.py:85
 msgid "Manage locations."
 msgstr ""
 
-#: views.py:81 views.py:157
+#: views.py:90 views.py:158
 msgid "Access groups"
 msgstr ""
 
-#: views.py:82
+#: views.py:91
 msgid "Manage who has access to your data."
 msgstr ""
 
-#: views.py:281
+#: views.py:261
 msgid "Add a {model_name}"
 msgstr ""
 
-#: views.py:283
+#: views.py:263
 msgid "Edit a {model_name}"
 msgstr ""
 
 #: templates/ddsc_management/base.html:45
-#: templates/ddsc_management/sources.html:65
-#: templates/ddsc_management/sources.html:68
-#: templates/ddsc_management/timeseries.html:60
-#: templates/ddsc_management/timeseries.html:63
 msgid "Cancel"
 msgstr ""
 
 #: templates/ddsc_management/base.html:46
 msgid "Continue"
+msgstr ""
+
+#: templates/ddsc_management/base.html:57
+msgid "Edit item"
+msgstr ""
+
+#: templates/ddsc_management/base.html:58
+msgid "Add a new item"
+msgstr ""
+
+#: templates/ddsc_management/base.html:59
+msgid "Return"
 msgstr ""
 
 #: templates/ddsc_management/form.html:15
@@ -114,50 +122,23 @@ msgstr ""
 msgid "All available sources"
 msgstr ""
 
-#: templates/ddsc_management/sources.html:18
-#: templates/ddsc_management/timeseries.html:22
+#: templates/ddsc_management/sources.html:19
+#: templates/ddsc_management/timeseries.html:23
 msgid "Name"
 msgstr ""
 
-#: templates/ddsc_management/sources.html:22
+#: templates/ddsc_management/sources.html:23
 msgid "Source type"
 msgstr ""
 
-#: templates/ddsc_management/sources.html:26
+#: templates/ddsc_management/sources.html:27
 msgid "Manufacturer"
-msgstr ""
-
-#: templates/ddsc_management/sources.html:39
-#: templates/ddsc_management/timeseries.html:35
-msgid "Details"
-msgstr ""
-
-#: templates/ddsc_management/sources.html:44
-#: templates/ddsc_management/timeseries.html:39
-msgid "Add item"
-msgstr ""
-
-#: templates/ddsc_management/sources.html:49
-#: templates/ddsc_management/sources.html:59
-#: templates/ddsc_management/timeseries.html:44
-#: templates/ddsc_management/timeseries.html:54
-msgid "Edit item"
-msgstr ""
-
-#: templates/ddsc_management/sources.html:53
-#: templates/ddsc_management/timeseries.html:48
-msgid "No item selected."
-msgstr ""
-
-#: templates/ddsc_management/sources.html:62
-#: templates/ddsc_management/timeseries.html:57
-msgid "Add a new item"
 msgstr ""
 
 #: templates/ddsc_management/timeseries.html:9
 msgid "All available timeseries"
 msgstr ""
 
-#: templates/ddsc_management/timeseries.html:18
+#: templates/ddsc_management/timeseries.html:19
 msgid "Code"
 msgstr ""

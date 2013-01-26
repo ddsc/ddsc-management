@@ -32,7 +32,6 @@ from ddsc_management.generic_views import (
     MyFormMixin,
     MyProcessFormMixin,
     ModelDataSourceView,
-    MySingleObjectFormMixin,
     MyTemplateMixin,
     MyModelClassMixin
 )
@@ -72,13 +71,13 @@ class BaseView(UiView):
             Action(
                 name=_('Timeseries'),
                 description=_('Manage timeseries.'),
-                url=reverse('ddsc_management.timeseries.list'),
+                url=reverse('ddsc_management.timeseries'),
                 icon=''
             ),
             Action(
                 name=_('Sources'),
                 description=_('Manage sources.'),
-                url=reverse('ddsc_management.sources.list'),
+                url=reverse('ddsc_management.sources'),
                 icon=''
             ),
             Action(
@@ -112,14 +111,9 @@ class ImportView(BaseView):
     template_name = 'ddsc_management/import.html'
     page_title = _('Import data')
 
-class TimeseriesView(MySingleObjectFormMixin, MySingleObjectMixin, MyFormMixin, MyProcessFormMixin, BaseView):
+class TimeseriesView(BaseView):
     template_name = 'ddsc_management/timeseries.html'
     page_title = _('Timeseries')
-    form_class = forms.TimeseriesForm
-    model = models.Timeseries
-
-    def query_set(self):
-        return self.model.objects_nosecurity.all()
 
 class TimeseriesApiView(ModelDataSourceView):
     model = models.Timeseries
@@ -159,16 +153,16 @@ class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'
     page_title = _('Locations')
 
+class LocationsApiView(ModelDataSourceView):
+    model = models.Location
+    allowed_columns = ['code', 'name']
+
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
     page_title = _('Access groups')
 
 class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTemplateMixin, JsonView):
-    model_name = None
     action = None
-    pk = None
-    model = None
-    instance = None
     template_name = 'ddsc_management/dynamic_form.html'
     model_name_to_form = {
         'manufacturer': forms.ManufacturerForm,
@@ -250,10 +244,11 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
         Determine URL in code, since Django's {% url %} template tag is
         lacking when dealing with query strings.
         '''
-        qs = urlencode({'pk': self.pk, 'for_modal': str(self.for_modal)})
         if self.action == 'add':
+            qs = urlencode({'for_modal': str(self.for_modal)})
             return reverse('ddsc_management.dynamic_form.add', kwargs={'model_name': self.model_name}) + '?' + qs
         elif self.action == 'edit':
+            qs = urlencode({'pk': self.pk, 'for_modal': str(self.for_modal)})
             return reverse('ddsc_management.dynamic_form.edit', kwargs={'model_name': self.model_name}) + '?' + qs
 
     def form_id(self):
