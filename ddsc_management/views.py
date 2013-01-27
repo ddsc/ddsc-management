@@ -25,7 +25,7 @@ from lizard_ui.layout import Action
 from ddsc_core import models
 
 from ddsc_management import forms
-from ddsc_management.utils import get_datatables_records
+from ddsc_management.utils import get_datatables_records, treebeard_nodes_to_jstree
 from ddsc_management.generic_views import (
     JsonView,
     MySingleObjectMixin,
@@ -117,7 +117,7 @@ class TimeseriesView(BaseView):
 
 class TimeseriesApiView(ModelDataSourceView):
     model = models.Timeseries
-    allowed_columns = ['code', 'name']
+    allowed_columns = ['uuid', 'name']
     detail_view_name = 'ddsc_management.timeseries.detail'
 
     def query_set(self):
@@ -152,10 +152,24 @@ class LocationsView(BaseView):
 
 class LocationsApiView(ModelDataSourceView):
     model = models.Location
-    allowed_columns = ['code', 'name']
+    allowed_columns = ['uuid', 'name']
 
     def query_set(self):
         return self.model.objects_nosecurity.all()
+
+class LocationTreeView(JsonView):
+    def get_json(self, request, *args, **kwargs):
+        parent_pk = request.GET.get('parent_pk', None)
+        #root = models.Location.objects_nosecurity.get(pk=pk)
+        #root = models.Location.objects_nosecurity.all()[0]
+
+        if parent_pk is None:
+            parent = None
+            nodes = models.Location.get_root_nodes()
+        else:
+            parent = models.Location.objects_nosecurity.get(pk=parent_pk)
+            nodes = parent.get_children()
+        return treebeard_nodes_to_jstree(nodes)
 
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'

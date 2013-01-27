@@ -44,6 +44,8 @@ urlpatterns = patterns(
         views.LocationsApiView.as_view(action='list'),   name='ddsc_management.api.locations.list'),
     url(r'^api/locations/delete/$',
         views.LocationsApiView.as_view(action='delete'), name='ddsc_management.api.locations.delete'),
+    url(r'^api/locations/tree$',
+        views.LocationTreeView.as_view(),                name='ddsc_management.api.locations.tree'),
 
     # Inline forms
     url(r'^dynamic_form/(?P<model_name>\w+)/add/$',

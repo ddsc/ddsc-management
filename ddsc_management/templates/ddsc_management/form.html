@@ -1,4 +1,9 @@
 {% load i18n %}
+{% comment %}
+{# use this for including exotic Django form widgets #}
+{# disabled because we include GeoDjango things globally #}
+{{ form.media }}
+{% endcomment %}
 <form
     {% if form_id %}id="{{ form_id }}"{% endif %}
     action="{{ action }}"

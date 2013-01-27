@@ -20,6 +20,7 @@ install_requires = [
     'raven',
     'werkzeug',
     'ddsc-core',
+    'django-floppyforms',
     ],
 
 setup(name='ddsc-management',

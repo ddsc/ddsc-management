@@ -129,3 +129,22 @@ def get_datatables_records(request, querySet, allowedColitems=[], searchableColu
         'sColumns': sColumns
     })
     return response_dict
+
+def treebeard_nodes_to_jstree(nodes, add_chilren=False):
+    result = []
+    for node in nodes:
+        node_result = {
+            'data': node.name,
+            'metadata': {
+            },
+            'attr': {
+                'pk': node.pk,
+                'numchild': node.numchild
+            }
+        }
+        if add_chilren and not node.is_leaf():
+            node_result['children'] = treebeard_nodes_to_jstree(node.get_children())
+        if not node.is_leaf():
+            node_result['state'] = 'closed'
+        result.append(node_result)
+    return result

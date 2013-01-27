@@ -3,12 +3,18 @@
 
 {% block css %}
 {{ block.super }}
+{# jQuery DataTables #}
 <link rel="stylesheet"
       type="text/css"
-      href="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/bootstrap/dataTables.bootstrap.css" />
+      href="{{ STATIC_URL }}ddsc_management/DataTables/bootstrap/dataTables.bootstrap.css" />
 <link rel="stylesheet"
       type="text/css"
-      href="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/css/TableTools.css" />
+      href="{{ STATIC_URL }}ddsc_management/DataTables/extras/TableTools/css/TableTools.css" />
+{# jstree #}
+<link rel="stylesheet"
+      type="text/css"
+      href="{{ STATIC_URL }}ddsc_management/jstree/themes/default/style.css" />
+{# ddsc_management #}
 <link rel="stylesheet"
       type="text/css"
       href="{{ STATIC_URL }}ddsc_management/main.css" />
@@ -21,18 +27,27 @@ if (typeof lizard === 'undefined') {
 }
 lizard.static_url = '{{ STATIC_URL }}';
 </script>
+{# jQuery DataTables #}
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/jquery.dataTables.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables/js/jquery.dataTables.js"></script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/bootstrap/dataTables.bootstrap.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables/bootstrap/dataTables.bootstrap.js"></script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/ZeroClipboard.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables/extras/TableTools/js/ZeroClipboard.js"></script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/extras/TableTools/js/TableTools.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables/extras/TableTools/js/TableTools.js"></script>
 <script type="text/javascript"
-        src="{{ STATIC_URL }}ddsc_management/DataTables-1.9.4/js/fnReloadAjax.js"></script>
+        src="{{ STATIC_URL }}ddsc_management/DataTables/js/fnReloadAjax.js"></script>
+{# jstree #}
+<script type="text/javascript"
+        src="{{ STATIC_URL }}ddsc_management/jstree/jquery.jstree.js"></script>
+{# floppyforms #}
+<script type="text/javascript"
+        src="{{ STATIC_URL }}floppyforms/js/MapWidget.js"></script>
+{# ddsc_management #}
 <script type="text/javascript"
         src="{{ STATIC_URL }}ddsc_management/main.js"></script>
+{# templates #}
 <script type="text/html" id="modal-template">
     <div class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-header-label" aria-hidden="true">
         <div class="modal-header">

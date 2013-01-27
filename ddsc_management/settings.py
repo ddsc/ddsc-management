@@ -9,6 +9,8 @@
 import os
 import tempfile
 
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+
 from lizard_ui.layout import Action
 from lizard_ui.settingshelper import setup_logging
 from lizard_ui.settingshelper import STATICFILES_FINDERS
@@ -132,12 +134,17 @@ MIDDLEWARE_CLASSES = (
     'lizard_security.middleware.SecurityMiddleware',
     )
 
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'django.core.context_processors.request',
+)
+
 INSTALLED_APPS = (
     'ddsc_management',
     'lizard_security',  # before lizard_ui!
     'lizard_ui',  # after lizard_security!
     'ddsc_core',  # after lizard_security!
     'treebeard',
+    'floppyforms',
     'south',
     'compressor',
     'staticfiles',

@@ -10,6 +10,12 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.forms import widgets
 from django.utils.safestring import mark_safe
+from django.utils.encoding import StrAndUnicode, force_unicode
+from django.forms.util import flatatt
+
+from treebeard.forms import MoveNodeForm
+from floppyforms.gis.widgets import PointWidget, GeometryWidget
+from floppyforms.gis.fields import PointField
 
 from ddsc_core import models
 
@@ -41,6 +47,27 @@ class SelectWithInlineFormPopup(widgets.Select):
         html = mark_safe(u'\n'.join(output))
         return html
 
+class TreePopup(widgets.Widget):
+    def render(self, name, value, attrs=None):
+        final_attrs = self.build_attrs(
+            attrs,
+        )
+        final_attrs['type'] = 'button'
+        final_attrs['class'] = 'btn'
+        final_attrs['data-tree-popup'] = 'true'
+        final_attrs['data-field'] = name
+        final_attrs['data-tree-url'] = reverse('ddsc_management.api.locations.tree')
+        return mark_safe(u'<button%s>%s</button>' % (flatatt(final_attrs), _('Open location tree')))
+
+class TreePlaceholder(widgets.Widget):
+    def render(self, name, value, attrs=None):
+        final_attrs = self.build_attrs(
+            attrs,
+        )
+        final_attrs['data-tree'] = 'tree'
+        final_attrs['data-field'] = name
+        return mark_safe(u'<div%s/>' % (flatatt(final_attrs)))
+
 class SourceForm(forms.ModelForm):
     class Meta:
         model = models.Source
@@ -56,7 +83,6 @@ class TimeseriesForm(forms.ModelForm):
     class Meta:
         model = models.Timeseries
         fields = [
-            'code',
             'name',
             'description',
             'data_set',
@@ -88,3 +114,19 @@ class ManufacturerForm(forms.ModelForm):
 class LocationForm(forms.ModelForm):
     class Meta:
         model = models.Location
+        fields = [
+            'name',
+            'description',
+            'path',
+            'relative_location',
+            'point_geometry',
+            'real_geometry',
+            'geometry_precision',
+        ]
+        widgets = {
+            'point_geometry': PointWidget,
+            'real_geometry': GeometryWidget,
+            'path': TreePopup
+        }
+
+#    point_geometry = PointField()

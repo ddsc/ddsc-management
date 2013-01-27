@@ -332,7 +332,7 @@ function init_data_tables () {
             },
             "oTableTools": {
                 "sRowSelect": "multi",
-                "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables-1.9.4/extras/TableTools/swf/copy_csv_xls_pdf.swf",
+                "sSwfPath": global.lizard.static_url + "ddsc_management/DataTables/extras/TableTools/swf/copy_csv_xls_pdf.swf",
                 "fnRowDeselected": function (nodes) {
                     // disable any buttons operating on selected rows here
                     var $btns = $custom_buttons.find('.selection-only');
@@ -627,11 +627,72 @@ function init_add_edit_detail_panels () {
     );
 }
 
+function show_tree_modal (field, tree_url, arg_success_callback) {
+    var $modal = create_modal('Lokaties');
+
+    // submit the inner form when clicking on "continue"
+    function continue_click (event) {
+        var $form = $modal.find('.modal-body form');
+        // close the modal on success
+        function success_callback (data) {
+            if (typeof arg_success_callback !== 'undefined') {
+                arg_success_callback(data);
+            }
+            $modal.modal('hide');
+        }
+        $form.trigger('submit', {'success_callback': success_callback});
+    }
+
+    // retrieve the form and stuff it in the modal body
+    var $tree = $('<div>');
+    $modal.find('.modal-body').children().remove()
+    $modal.find('.modal-body').append($tree);
+
+    $tree.jstree({
+        json_data: {
+            ajax: {
+                url: tree_url,
+                data: function (n) {
+                    if (n.attr) {
+                        return {parent_pk: n.attr("pk")};
+                    }
+                    else {
+                        return {};
+                    }
+                },
+                error: function (e) {
+                    console.error(e);
+                }
+            }
+        },
+        core: {html_titles: true, load_open: true},
+        plugins: ["themes", "json_data", "ui"]
+    });
+
+    $modal.modal('show');
+}
+
+function init_tree_modal () {
+    $(document).on('click',
+        'button[data-tree-popup="true"]',
+        function (event) {
+            // get the model for which we need to generate a form
+            var $button = $(this);
+            var field = $button.data('field');
+            var tree_url = $button.data('tree-url');
+
+            // open a modal
+            show_tree_modal(field, tree_url);
+        }
+    );
+}
+
 $(document).ready(function () {
     init_dynamic_forms();
     init_dynamic_links();
 
     init_inline_add();
+    init_tree_modal();
     init_data_tables();
     init_add_edit_detail_panels();
 });
