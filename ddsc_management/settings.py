@@ -145,6 +145,7 @@ INSTALLED_APPS = (
     'lizard_ui',  # after lizard_security!
     'ddsc_core',  # after lizard_security!
     'treebeard',
+    #'mptt',
     'floppyforms',
     'south',
     'compressor',

@@ -154,17 +154,16 @@ class LocationsApiView(ModelDataSourceView):
     model = models.Location
     allowed_columns = ['uuid', 'name']
 
-    def query_set(self):
-        return self.model.objects_nosecurity.all()
-
 class LocationTreeView(JsonView):
     def get_json(self, request, *args, **kwargs):
         parent_pk = request.GET.get('parent_pk', None)
+        search = request.GET.get('search', None)
         if parent_pk:
-            parent = models.Location.objects_nosecurity.get(pk=parent_pk)
+            parent = models.Location.objects.get(pk=parent_pk)
             nodes = parent.get_children()
+        elif search:
+            nodes = models.Location.objects.filter(name__icontains=search)
         else:
-            parent = None
             nodes = models.Location.get_root_nodes()
         return treebeard_nodes_to_jstree(nodes)
 

@@ -207,7 +207,7 @@ function add_custom_buttons ($table, $container, data_table) {
                     // open the modal
                     show_confirm_modal(
                         "Zeker?",
-                        "Weet u zeker dat u de item(s) met ID = " + selected + " wilt verwijderen?",
+                        "Weet u zeker dat u de item(s) met ID = " + selected + " wilt verwijderen? Let op: alle onderliggende items worden hiermee ook verwijderd.",
                         continue_callback
                     );
                 }
@@ -630,21 +630,45 @@ function init_add_edit_detail_panels () {
 function show_tree_modal (field, tree_url, arg_success_callback) {
     var $modal = create_modal('Lokaties');
 
-    // retrieve the form and stuff it in the modal body
-    var $tree = $('<div>');
+    // build a search form and stuff it in the modal body
     $modal.find('.modal-body').children().remove()
+    var $container = $('<div>');
+    var template_html = '' +
+    '<form class="form-search">' +
+        '<input type="text" class="search-query" placeholder="Type een zoekterm..."/>' +
+        '<button type="submit" class="btn">Zoek</button>' +
+    '</form>';
+    $container.html(template_html);
+    var $search_input = $container.find('input');
+    $modal.find('.modal-body').append($container);
+
+    // build an element for jsTree
+    var $tree = $('<div>');
     $modal.find('.modal-body').append($tree);
 
+    // initialize jsTree on it
     $tree.jstree({
         json_data: {
             ajax: {
                 url: tree_url,
-                data: function (n) {
-                    if (n.attr) {
-                        return {parent_pk: n.data('pk')};
+                data: function (node) {
+                    // overridden so we can add a GET parameter
+                    // to each server call
+                    if (node.data) {
+                        // we are in a subnode, retrieve childnodes
+                        return {parent_pk: node.data('pk')};
                     }
                     else {
-                        return {};
+                        // retrieve root nodes
+                        var val = $search_input.val();
+                        if (val != '') {
+                            // have the server search for nodes
+                            return {search: val};
+                        }
+                        else {
+                            // get ALL root nodes
+                            return {};
+                        }
                     }
                 },
                 error: function (e) {
@@ -657,9 +681,18 @@ function show_tree_modal (field, tree_url, arg_success_callback) {
         plugins: ["themes", "json_data", "ui"]
     });
 
+    // define what happens when the search form is submitted
+    function search (event) {
+        if (event) {
+            event.preventDefault();
+        }
+        // just refresh the tree and have it handle the <input> value
+        $tree.jstree('refresh');
+    }
+    $container.find('form').on('submit', search);
+
     // pass selected item PK back when clicking continue
     function continue_click (event) {
-        var $form = $modal.find('.modal-body form');
         var $selected_item = $tree.jstree('get_selected');
         var data = {
             pk: $selected_item.data('pk')
@@ -670,8 +703,9 @@ function show_tree_modal (field, tree_url, arg_success_callback) {
         // close the modal on success
         $modal.modal('hide');
     }
-
     $modal.find('.modal-continue').click(continue_click);
+
+    // open the modal
     $modal.modal('show');
 }
 
