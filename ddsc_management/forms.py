@@ -155,7 +155,9 @@ class LocationForm(forms.ModelForm):
             if parent is None:
                 raise ValidationError('No such parent.')
             if self.instance.pk is not None and self.instance.pk == parent.pk:
-                raise ValidationError('Can not assign location as a sublocation of itself.')
+                raise ValidationError("Can't assign location as a sublocation of itself.")
+            if parent.is_descendant_of(self.instance):
+                raise ValidationError("Can't move location to a descendant.")
         return parent_pk
 
     def save(self, commit=True):
