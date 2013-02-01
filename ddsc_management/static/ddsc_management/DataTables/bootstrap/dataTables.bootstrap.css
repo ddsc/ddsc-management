@@ -96,7 +96,7 @@ div.dataTables_scrollFoot table {
 	background-color: #017ebc;
 }
 
-table.DTTT_selectable tbody tr {
+table.DTTT_selectable tbody tr > td:first-child {
 	cursor: pointer;
 	*cursor: hand;
 }

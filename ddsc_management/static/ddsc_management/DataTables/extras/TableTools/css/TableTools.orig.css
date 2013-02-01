@@ -173,7 +173,7 @@ button.DTTT_button_collection:hover span {
  * SELECTING
  * Row selection styles
  */
-table.DTTT_selectable tbody tr > td:first-child {
+table.DTTT_selectable tbody tr {
 	cursor: pointer;
 	*cursor: hand;
 }
