@@ -9,7 +9,7 @@
 import os
 import tempfile
 
-from django.conf.global_settings as DEFAULT_SETTINGS
+from django.conf import global_settings as DEFAULT_SETTINGS
 
 from lizard_ui.layout import Action
 from lizard_ui.settingshelper import setup_logging
