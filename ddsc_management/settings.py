@@ -67,6 +67,7 @@ DATABASES = {
         'PORT': '5432',
         }
     }
+POSTGIS_VERSION = (1,5,3)
 
 # Almost always set to 1.  Django allows multiple sites in one database.
 SITE_ID = 1

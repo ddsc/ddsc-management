@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-26 14:01+0100\n"
+"POT-Creation-Date: 2013-02-01 15:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:66
+msgid "Open location tree"
+msgstr "Open lokatieselectie"
+
+#: forms.py:138
+#, fuzzy
+msgid "Parent location"
+msgstr "Beheer lokaties."
 
 #: views.py:54 views.py:104
 msgid "Summary"
@@ -49,7 +58,7 @@ msgstr "Tijdreeksen"
 msgid "Manage timeseries."
 msgstr "Beheer tijdreeksen."
 
-#: views.py:78 views.py:131
+#: views.py:78 views.py:128
 msgid "Sources"
 msgstr "Bronnen"
 
@@ -57,7 +66,7 @@ msgstr "Bronnen"
 msgid "Manage sources."
 msgstr "Beheer bronnen."
 
-#: views.py:84 views.py:154
+#: views.py:84 views.py:151
 msgid "Locations"
 msgstr "Lokaties"
 
@@ -65,7 +74,7 @@ msgstr "Lokaties"
 msgid "Manage locations."
 msgstr "Beheer lokaties."
 
-#: views.py:90 views.py:158
+#: views.py:90 views.py:173
 msgid "Access groups"
 msgstr "Toegangsgroepen"
 
@@ -73,60 +82,71 @@ msgstr "Toegangsgroepen"
 msgid "Manage who has access to your data."
 msgstr "Beheer wie toegang heeft tot uw data."
 
-#: views.py:261
+#: views.py:282
 msgid "Add a {model_name}"
 msgstr "Voeg een {model_name} toe"
 
-#: views.py:263
+#: views.py:284
 msgid "Edit a {model_name}"
 msgstr "Wijzig een {model_name}"
 
-#: templates/ddsc_management/base.html:45
+#: templates/ddsc_management/base.html:60
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: templates/ddsc_management/base.html:46
+#: templates/ddsc_management/base.html:61
 msgid "Continue"
 msgstr "Doorgaan"
 
-#: templates/ddsc_management/base.html:57
+#: templates/ddsc_management/base.html:72
 msgid "Edit item"
 msgstr "Bewerk item"
 
-#: templates/ddsc_management/base.html:58
+#: templates/ddsc_management/base.html:73
 msgid "Add a new item"
 msgstr "Voeg item toe"
 
-#: templates/ddsc_management/base.html:59
+#: templates/ddsc_management/base.html:74
 msgid "Return"
 msgstr "Terug"
 
-#: templates/ddsc_management/form.html:15
+#: templates/ddsc_management/form.html:20
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
 msgstr[0] "Verbeter de onderstaande fout."
 msgstr[1] "Verbeter de onderstaande fouten."
 
-#: templates/ddsc_management/form.html:22
+#: templates/ddsc_management/form.html:27
 msgid "Please fill in the form below"
 msgstr "Vul het onderstaande formulier in"
 
-#: templates/ddsc_management/form.html:29
+#: templates/ddsc_management/form.html:34
 msgid "Submit"
 msgstr "Verzenden"
 
-#: templates/ddsc_management/form.html:29
+#: templates/ddsc_management/form.html:34
 msgid "Reset values"
 msgstr "Reset"
 
-#: templates/ddsc_management/sources.html:9
-msgid "All available sources"
+#: templates/ddsc_management/locations.html:9
+#, fuzzy
+msgid "All available locations"
 msgstr "Beschikbare bronnen"
 
+#: templates/ddsc_management/locations.html:19
 #: templates/ddsc_management/sources.html:19
 #: templates/ddsc_management/timeseries.html:23
 msgid "Name"
 msgstr "Naam"
+
+#: templates/ddsc_management/locations.html:23
+#: templates/ddsc_management/timeseries.html:19
+msgid "UUID"
+msgstr ""
+
+#: templates/ddsc_management/sources.html:9
+msgid "All available sources"
+msgstr "Beschikbare bronnen"
 
 #: templates/ddsc_management/sources.html:23
 msgid "Source type"
@@ -140,9 +160,16 @@ msgstr "Fabrikant"
 msgid "All available timeseries"
 msgstr "Alle beschikbare tijdreeksen"
 
-#: templates/ddsc_management/timeseries.html:19
-msgid "Code"
-msgstr "Code"
+#: templates/floppyforms/gis/openlayers.html:19
+msgid "Delete all features"
+msgstr "Verwijder alle punten"
+
+#: templates/lizard_ui/realbase.html:100
+msgid "Back to homepage"
+msgstr ""
+
+#~ msgid "Code"
+#~ msgstr "Code"
 
 #~ msgid "Details"
 #~ msgstr "Details"

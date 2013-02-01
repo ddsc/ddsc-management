@@ -630,19 +630,6 @@ function init_add_edit_detail_panels () {
 function show_tree_modal (field, tree_url, arg_success_callback) {
     var $modal = create_modal('Lokaties');
 
-    // submit the inner form when clicking on "continue"
-    function continue_click (event) {
-        var $form = $modal.find('.modal-body form');
-        // close the modal on success
-        function success_callback (data) {
-            if (typeof arg_success_callback !== 'undefined') {
-                arg_success_callback(data);
-            }
-            $modal.modal('hide');
-        }
-        $form.trigger('submit', {'success_callback': success_callback});
-    }
-
     // retrieve the form and stuff it in the modal body
     var $tree = $('<div>');
     $modal.find('.modal-body').children().remove()
@@ -654,7 +641,7 @@ function show_tree_modal (field, tree_url, arg_success_callback) {
                 url: tree_url,
                 data: function (n) {
                     if (n.attr) {
-                        return {parent_pk: n.attr("pk")};
+                        return {parent_pk: n.data('pk')};
                     }
                     else {
                         return {};
@@ -665,10 +652,26 @@ function show_tree_modal (field, tree_url, arg_success_callback) {
                 }
             }
         },
+        ui: {select_multiple_modifier: false},
         core: {html_titles: true, load_open: true},
         plugins: ["themes", "json_data", "ui"]
     });
 
+    // pass selected item PK back when clicking continue
+    function continue_click (event) {
+        var $form = $modal.find('.modal-body form');
+        var $selected_item = $tree.jstree('get_selected');
+        var data = {
+            pk: $selected_item.data('pk')
+        };
+        if (typeof arg_success_callback !== 'undefined') {
+            arg_success_callback(data);
+        }
+        // close the modal on success
+        $modal.modal('hide');
+    }
+
+    $modal.find('.modal-continue').click(continue_click);
     $modal.modal('show');
 }
 
@@ -681,8 +684,14 @@ function init_tree_modal () {
             var field = $button.data('field');
             var tree_url = $button.data('tree-url');
 
+            // add an <option> to the nearest <select> when the modal closes
+            function success_callback (data) {
+                var $input = $button.siblings('input');
+                $input.val(data.pk);
+            }
+
             // open a modal
-            show_tree_modal(field, tree_url);
+            show_tree_modal(field, tree_url, success_callback);
         }
     );
 }

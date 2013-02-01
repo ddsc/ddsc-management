@@ -12,6 +12,7 @@ from django.forms import widgets
 from django.utils.safestring import mark_safe
 from django.utils.encoding import StrAndUnicode, force_unicode
 from django.forms.util import flatatt
+from django.utils.html import conditional_escape
 
 from treebeard.forms import MoveNodeForm
 from floppyforms.gis.widgets import PointWidget, GeometryWidget
@@ -47,8 +48,13 @@ class SelectWithInlineFormPopup(widgets.Select):
         html = mark_safe(u'\n'.join(output))
         return html
 
-class TreePopup(widgets.Widget):
+class TreePopup(widgets.TextInput):
     def render(self, name, value, attrs=None):
+        output = []
+
+        text_input_html = widgets.TextInput.render(self, name, value, attrs=attrs)
+        output.append(text_input_html)
+
         final_attrs = self.build_attrs(
             attrs,
         )
@@ -57,9 +63,11 @@ class TreePopup(widgets.Widget):
         final_attrs['data-tree-popup'] = 'true'
         final_attrs['data-field'] = name
         final_attrs['data-tree-url'] = reverse('ddsc_management.api.locations.tree')
-        return mark_safe(u'<button%s>%s</button>' % (flatatt(final_attrs), _('Open location tree')))
+        output.append(u'<button%s>%s</button>' % (flatatt(final_attrs), _('Open location tree')))
 
-class TreePlaceholder(widgets.Widget):
+        return mark_safe(u'\n'.join(output))
+
+class LocationSelector(widgets.Widget):
     def render(self, name, value, attrs=None):
         final_attrs = self.build_attrs(
             attrs,
@@ -117,7 +125,6 @@ class LocationForm(forms.ModelForm):
         fields = [
             'name',
             'description',
-            'path',
             'relative_location',
             'point_geometry',
             'real_geometry',
@@ -126,7 +133,30 @@ class LocationForm(forms.ModelForm):
         widgets = {
             'point_geometry': PointWidget,
             'real_geometry': GeometryWidget,
-            'path': TreePopup
         }
 
-#    point_geometry = PointField()
+    parent_pk = forms.CharField(label=_('Parent location'), required=False, widget=TreePopup)
+
+    def __init__(self, *args, **kwargs):
+        super(LocationForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            # we're in editing / update mode
+            if not self.initial.get('parent_pk'):
+                parent = self.instance.get_parent()
+                parent_pk = None if parent is None else parent.pk
+                self.initial['parent_pk'] = parent_pk
+
+    def clean_parent_pk(self):
+        parent_pk = self.data.get('parent_pk')
+        if parent_pk in ['', 0, None]:
+            parent_pk = None
+        else:
+            if not models.Location.objects_nosecurity.exists():
+                raise ValidationError('No such parent')
+        return parent_pk
+
+    def save(self, commit=True):
+        if commit:
+            parent_pk = self.cleaned_data.get('parent_pk')
+            self.instance = self.instance.save_under(parent_pk=parent_pk)
+        return super(LocationForm, self).save(commit=commit)

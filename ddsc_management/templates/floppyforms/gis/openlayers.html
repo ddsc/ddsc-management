@@ -1,3 +1,4 @@
+{% load i18n %}
 <style type="text/css">
     #{{ attrs.id }}_map { width: 100%; height: {{ map_height }}px; }
     #{{ attrs.id }}_map .aligned label { float: inherit; }
@@ -15,7 +16,7 @@
 
 <div id="{{ attrs.id }}_div_map" class="floppyforms-map">
     <div id="{{ attrs.id }}_map"></div>
-    <a href="javascript:{{ module }}.clearFeatures()">Delete all Features</a>
+    <a href="javascript:{{ module }}.clearFeatures()">{% trans 'Delete all features' %}</a>
     {% if display_wkt %}<p> WKT debugging window:</p>{% endif %}
     {% include "floppyforms/textarea.html" %}
 </div>

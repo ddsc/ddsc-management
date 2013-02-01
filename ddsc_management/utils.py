@@ -134,12 +134,13 @@ def treebeard_nodes_to_jstree(nodes, add_chilren=False):
     result = []
     for node in nodes:
         node_result = {
-            'data': node.name,
+            'data': unicode(node),
             'metadata': {
             },
             'attr': {
-                'pk': node.pk,
-                'numchild': node.numchild
+                'data-pk': node.pk,
+                'data-label': unicode(node),
+                'data-numchild': node.numchild
             }
         }
         if add_chilren and not node.is_leaf():

@@ -160,15 +160,12 @@ class LocationsApiView(ModelDataSourceView):
 class LocationTreeView(JsonView):
     def get_json(self, request, *args, **kwargs):
         parent_pk = request.GET.get('parent_pk', None)
-        #root = models.Location.objects_nosecurity.get(pk=pk)
-        #root = models.Location.objects_nosecurity.all()[0]
-
-        if parent_pk is None:
-            parent = None
-            nodes = models.Location.get_root_nodes()
-        else:
+        if parent_pk:
             parent = models.Location.objects_nosecurity.get(pk=parent_pk)
             nodes = parent.get_children()
+        else:
+            parent = None
+            nodes = models.Location.get_root_nodes()
         return treebeard_nodes_to_jstree(nodes)
 
 class AccessGroupsView(BaseView):
