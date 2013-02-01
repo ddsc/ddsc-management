@@ -151,8 +151,11 @@ class LocationForm(forms.ModelForm):
         if parent_pk in ['', 0, None]:
             parent_pk = None
         else:
-            if not models.Location.objects_nosecurity.exists():
-                raise ValidationError('No such parent')
+            parent = models.Location.objects_nosecurity.get(pk=parent_pk)
+            if parent is None:
+                raise ValidationError('No such parent.')
+            if self.instance.pk is not None and self.instance.pk == parent.pk:
+                raise ValidationError('Can not assign location as a sublocation of itself.')
         return parent_pk
 
     def save(self, commit=True):
