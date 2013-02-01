@@ -1,3 +1,5 @@
+import os
+
 from lizard_ui.settingshelper import setup_logging
 
 from ddsc_management.settings import *
@@ -21,11 +23,8 @@ DATABASES = {
     # the specified database exists. When the tests cannot run, Jenkins sees
     # that as an error.
     'default': {
-        'NAME': os.path.join(BUILDOUT_DIR, 'var', 'sqlite', 'test.db'),
-        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
-        # If you want to use postgres, use the two lines below.
-        # 'NAME': 'ddsc_management',
-        # 'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'ddsc_management',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'USER': 'buildout',
         'PASSWORD': 'buildout',
         'HOST': '',  # empty string for localhost.
@@ -33,9 +32,9 @@ DATABASES = {
         },
     }
 
-
-try:
-    from ddsc_management.localsettings import *
-    # For local dev overrides.
-except ImportError:
-    pass
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BUILDOUT_DIR, 'var', 'cache'),
+    }
+}

@@ -9,7 +9,7 @@
 import os
 import tempfile
 
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+from django.conf.global_settings as DEFAULT_SETTINGS
 
 from lizard_ui.layout import Action
 from lizard_ui.settingshelper import setup_logging
@@ -37,11 +37,6 @@ BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
 # sentry at 'WARN' level.
 LOGGING = setup_logging(BUILDOUT_DIR, console_level=None, sentry_level='WARN')
 
-# Triple blast.  Needed to get matplotlib from barfing on the server: it needs
-# to be able to write to some directory.
-if 'MPLCONFIGDIR' not in os.environ:
-    os.environ['MPLCONFIGDIR'] = tempfile.gettempdir()
-
 # Production, so DEBUG is False. developmentsettings.py sets it to True.
 DEBUG = False
 # Show template debug information for faulty templates.  Only used when DEBUG
@@ -58,15 +53,9 @@ MANAGERS = ADMINS
 # ^^^ 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 # In case of geodatabase, prepend with: django.contrib.gis.db.backends.(postgis)
 DATABASES = {
-    'default': {
-        'NAME': 'ddsc_management',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'USER': 'ddsc_management',
-        'PASSWORD': 'aaaaaaa',
-        'HOST': 'TODO',
-        'PORT': '5432',
-        }
-    }
+    # Note: public repo, use localsettings!
+    # override me in localsettings
+}
 POSTGIS_VERSION = (1,5,3)
 
 # Almost always set to 1.  Django allows multiple sites in one database.
@@ -107,7 +96,8 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static_media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'xxxxxxxxxxxxxxx'
+# override me in localsettings
+SECRET_KEY = ''
 
 ROOT_URLCONF = 'ddsc_management.urls'
 
@@ -135,8 +125,8 @@ MIDDLEWARE_CLASSES = (
     'lizard_security.middleware.SecurityMiddleware',
     )
 
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'django.core.context_processors.request',
+TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    'django.core.context_processors.request',  # treebeard
 )
 
 INSTALLED_APPS = (
@@ -145,7 +135,6 @@ INSTALLED_APPS = (
     'lizard_ui',  # after lizard_security!
     'ddsc_core',  # after lizard_security!
     'treebeard',
-    #'mptt',
     'floppyforms',
     'south',
     'compressor',
@@ -163,10 +152,11 @@ INSTALLED_APPS = (
 )
 
 # TODO: Put your real url here to configure Sentry.
-#SENTRY_DSN = 'http://some:thing@sentry.lizardsystem.nl/1'
+# override me in localsettings
+SENTRY_DSN = None
 
-# TODO: add gauges ID here. Generate one separately for the staging, too.
-UI_GAUGES_SITE_ID = ''  # Staging has a separate one.
+# override me in localsettings
+UI_GAUGES_SITE_ID = ''
 
 LIZARD_SITE = 'http://test.dijkdata.nl/'
 MANAGEMENT_SITE = 'http://test.beheer.dijkdata.nl/'
@@ -197,7 +187,14 @@ UI_SITE_ACTIONS = [
     ]
 
 try:
-    from ddsc_management.localproductionsettings import *
-    # For local production overrides (DB passwords, for instance)
+    # For local overrides (DB passwords, for instance)
+    from ddsc_management.localsettings import *
+    # for ddsc, the following stuff need to be defined in localsettings.py,
+    # and shared across the various Django instances.
+    #DATABASES
+    #SECRET_KEY
+    #UI_GAUGES_SITE_ID
+    #SESSION_COOKIE_DOMAIN
+    #DATABASE_ROUTERS
 except ImportError:
     pass
