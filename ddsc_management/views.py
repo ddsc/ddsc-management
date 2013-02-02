@@ -208,6 +208,7 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
                 'success': True,
                 'pk': instance.pk,
                 'name': str(instance),
+                'affected_model': self.model_name,
             }
         else:
             html = self.render_to_html()

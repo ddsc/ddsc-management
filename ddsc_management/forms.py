@@ -150,6 +150,9 @@ class LocationForm(forms.ModelForm):
 
     def clean_parent_pk(self):
         parent_pk = self.data.get('parent_pk')
+        if isinstance(parent_pk, basestring):
+            # trim whitespace
+            parent_pk = parent_pk.strip()
         if parent_pk in ['', 0, None]:
             parent_pk = None
         else:

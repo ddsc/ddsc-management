@@ -135,11 +135,14 @@ function init_dynamic_forms () {
             dom_replace_with(target, data.html);
             // when triggered via a custom event trigger, call the optional
             // callback
-            if (data.success) {
+            if (data.success === true) {
                 if (typeof extraParameters !== 'undefined') {
                     if (extraParameters.success_callback) {
                         extraParameters.success_callback(data);
                     }
+                }
+                if (data.affected_model) {
+                    $(document).trigger('model-data-changed', data.affected_model);
                 }
             }
         })
@@ -283,6 +286,7 @@ function init_data_tables () {
         // allow passing options via data attributes on the element
         var url = $el.data('url');
         var detail_target = $el.data('detail-target');
+        var model = $el.data('model');
         // Note: need to wrap arrays because $.data won't recognize
         // an attribute starting with [ as valid JSON.
         var columns = $.parseJSON($el.data('columns'));
@@ -402,6 +406,15 @@ function init_data_tables () {
 
         add_custom_buttons($el, $custom_buttons, data_table);
         fix_selection_on_page_change(data_table);
+
+        // refresh table when data has been changed
+        if (model) {
+            $(document).on('model-data-changed', function (event, affected_model) {
+                if (affected_model == model) {
+                    data_table.fnReloadAjax();
+                }
+            });
+        }
     });
 }
 
