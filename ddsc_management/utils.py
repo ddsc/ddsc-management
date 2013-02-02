@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.db.models.fields.related import RelatedField
-
+from django.contrib.gis.db.models.fields import GeometryField
 from urllib import urlencode
 
 # Never return more then MAX_RECORDS records
@@ -81,7 +81,11 @@ def get_datatables_records(request, querySet, allowedColitems=[], searchableColu
 
     # Determine which columns are searchable
     if not searchableColumns:
-        searchableColumns = [field.name for field in querySet.model._meta.fields if not isinstance(field, RelatedField)]
+        searchableColumns = [
+            field.name for field in querySet.model._meta.fields
+            if not isinstance(field, RelatedField)
+            and not isinstance(field, GeometryField)
+        ]
 
     # Apply filtering by value sent by user
     customSearch = request.GET.get('sSearch', '').encode('utf-8');

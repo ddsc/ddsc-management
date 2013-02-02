@@ -195,6 +195,7 @@ try:
     #SECRET_KEY
     #UI_GAUGES_SITE_ID
     #SESSION_COOKIE_DOMAIN
+    #SESSION_COOKIE_NAME
     #DATABASE_ROUTERS
 except ImportError:
     pass
