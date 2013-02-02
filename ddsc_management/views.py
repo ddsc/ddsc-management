@@ -132,18 +132,6 @@ class SourcesApiView(ModelDataSourceView):
     allowed_columns = ['name', 'source_type', 'manufacturer__name']
 
     def list(self):
-        # DEBUG create a few objects if none exist
-        if self.query_set().count() == 0:
-            m = models.Manufacturer()
-            m.name = 'generic'
-            m.save()
-            for i in range(200):
-                c = models.Source()
-                c.manufacturer = m
-                c.name = 'name {:03d}'.format(i)
-                c.details = 'details {:03d}'.format(i)
-                c.save()
-        # /DEBUG
         return super(SourcesApiView, self).list()
 
 class LocationsView(BaseView):
