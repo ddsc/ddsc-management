@@ -20,7 +20,7 @@ install_requires = [
     'raven',
     'werkzeug',
     'ddsc-core',
-    'django-floppyforms',
+    'django-floppyforms == 1.0',
     'six', # floppyforms secretly depends on this
     ],
 
