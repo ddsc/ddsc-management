@@ -21,6 +21,7 @@ install_requires = [
     'werkzeug',
     'ddsc-core',
     'django-floppyforms',
+    'six', # floppyforms secretly depends on this
     ],
 
 setup(name='ddsc-management',
