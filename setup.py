@@ -10,18 +10,19 @@ long_description = '\n\n'.join([
 
 install_requires = [
     'Django',
+    'ddsc-core',
     'django-celery',
     'django-extensions',
+    'django-floppyforms == 1.0',
     'django-nose',
+    'django-treebeard',
     'gunicorn',
     'lizard-map',
     'lizard-ui',
     'python-memcached',
     'raven',
+    'six',  # floppyforms secretly depends on this
     'werkzeug',
-    'ddsc-core',
-    'django-floppyforms == 1.0',
-    'six', # floppyforms secretly depends on this
     ],
 
 setup(name='ddsc-management',
