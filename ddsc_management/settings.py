@@ -7,7 +7,6 @@
 # ever put personal settings into this file or into developmentsettings.py!
 
 import os
-import tempfile
 
 from django.conf import global_settings as DEFAULT_SETTINGS
 
@@ -51,12 +50,13 @@ MANAGERS = ADMINS
 
 # TODO: Switch this to the real production database.
 # ^^^ 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-# In case of geodatabase, prepend with: django.contrib.gis.db.backends.(postgis)
+# In case of geodatabase, prepend with:
+# django.contrib.gis.db.backends.(postgis)
 DATABASES = {
     # Note: public repo, use localsettings!
     # override me in localsettings
 }
-POSTGIS_VERSION = (1,5,3)
+POSTGIS_VERSION = (1, 5, 3)
 
 # Almost always set to 1.  Django allows multiple sites in one database.
 SITE_ID = 1
@@ -188,7 +188,7 @@ UI_SITE_ACTIONS = [
 
 try:
     # For local overrides (DB passwords, for instance)
-    from ddsc_management.localsettings import *
+    from ddsc_management.localsettings import *  # NOQA
     # for ddsc, the following stuff need to be defined in localsettings.py,
     # and shared across the various Django instances.
     #DATABASES
