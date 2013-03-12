@@ -9,10 +9,11 @@
 import os
 
 from django.conf import global_settings as DEFAULT_SETTINGS
+import djcelery
 
 from lizard_ui.layout import Action
-from lizard_ui.settingshelper import setup_logging
 from lizard_ui.settingshelper import STATICFILES_FINDERS
+from lizard_ui.settingshelper import setup_logging
 
 STATICFILES_FINDERS = STATICFILES_FINDERS
 
@@ -148,6 +149,7 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'djcelery',
     'gunicorn',
 )
 
@@ -186,6 +188,10 @@ UI_SITE_ACTIONS = [
     ),
     ]
 
+# Celery
+djcelery.setup_loader()
+CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
+
 try:
     # For local overrides (DB passwords, for instance)
     from ddsc_management.localsettings import *  # NOQA
@@ -197,5 +203,6 @@ try:
     #SESSION_COOKIE_DOMAIN
     #SESSION_COOKIE_NAME
     #DATABASE_ROUTERS
+    #BROKER_URL
 except ImportError:
     pass
