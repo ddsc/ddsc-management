@@ -59,6 +59,7 @@ urlpatterns = patterns(
 
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),
 
+    url(r'^ddsc_core/', include('ddsc_core.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^map/', include('lizard_map.urls')),
     url(r'^ui/', include('lizard_ui.urls')),
