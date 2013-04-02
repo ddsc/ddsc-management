@@ -130,6 +130,11 @@ TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
     'django.core.context_processors.request',  # treebeard
 )
 
+# Customize branding by overriding base_site.html
+TEMPLATE_DIRS = (
+    os.path.join(SETTINGS_DIR, 'templates')
+)
+
 INSTALLED_APPS = (
     'ddsc_management',
     'lizard_security',  # before lizard_ui!
