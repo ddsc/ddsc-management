@@ -137,6 +137,7 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'ddsc_management',
+    'lizard_auth_client',
     'lizard_security',  # before lizard_ui!
     'lizard_ui',  # after lizard_security!
     'ddsc_core',  # after lizard_security!
