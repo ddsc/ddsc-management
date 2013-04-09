@@ -198,6 +198,9 @@ UI_SITE_ACTIONS = [
 djcelery.setup_loader()
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 
+# Tell Django about the user profile
+AUTH_PROFILE_MODULE = "ddsc_management.UserProfile"
+
 try:
     # For local overrides (DB passwords, for instance)
     from ddsc_management.localsettings import *  # NOQA
