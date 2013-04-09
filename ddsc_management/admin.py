@@ -29,6 +29,13 @@ class DdscUserAdmin(UserAdmin):
 
     """
     actions = ['synchronize_with_sso_server']
+    list_display = UserAdmin.list_display + ('has_usable_password', )
+
+    def has_usable_password(self, user):
+        return user.has_usable_password()
+
+    has_usable_password.boolean = True  # Display as icon
+    has_usable_password.short_description = _('has_usable_password')
 
     @transaction.commit_on_success
     def synchronize_with_sso_server(self, request, queryset):
@@ -100,6 +107,10 @@ class DdscUserAdmin(UserAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, DdscUserAdmin)
+
+# Register others:
+
+admin.site.register(UserProfile)
 
 # Hide Piston:
 

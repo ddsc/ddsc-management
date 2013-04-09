@@ -2,7 +2,7 @@ import os
 
 from lizard_ui.settingshelper import setup_logging
 
-from ddsc_management.settings import *
+from ddsc_management.settings import *  # NOQA
 
 DEBUG = True
 
@@ -38,3 +38,20 @@ CACHES = {
         'LOCATION': os.path.join(BUILDOUT_DIR, 'var', 'cache'),
     }
 }
+
+# SSO
+SSO_STANDALONE = False
+SSO_ENABLED = True
+# A key identifying this client. Can be published.
+SSO_KEY = 'WSX'
+# A *secret* shared between client and server.
+# Used to sign the messages exchanged between them.
+SSO_SECRET = 'QAZ'
+# URL used to redirect the user to the SSO server
+# Note: needs a trailing slash
+SSO_SERVER_PUBLIC_URL = 'http://localhost:8001/'
+# URL used for server-to-server communication
+# Note: needs a trailing slash
+SSO_SERVER_PRIVATE_URL = 'http://localhost:8001/'
+
+WEBCLIENT = 'http://localhost:8000'

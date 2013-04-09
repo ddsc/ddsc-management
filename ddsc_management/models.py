@@ -9,6 +9,13 @@ from django.db import models
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     sso_user_pk = models.IntegerField(
-        help_text="Primary key at SSO server",
+        help_text="Primary key of this user at the SSO server",
         unique=True,
+        verbose_name="SSO pk",
     )
+
+    class Meta:
+        ordering = ("user__username", )
+
+    def __unicode__(self):
+        return unicode(self.user)

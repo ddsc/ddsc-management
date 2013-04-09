@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-05 10:14+0200\n"
+"POT-Creation-Date: 2013-04-09 12:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: admin.py:19
+#: admin.py:32
+msgid "has_usable_password"
+msgstr "heeft lokaal wachtwoord"
+
+#: admin.py:46
 msgid "Synchronize with SSO server"
 msgstr "Synchroniseer met SSO-server"
 

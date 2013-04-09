@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-01 15:38+0100\n"
+"POT-Creation-Date: 2013-04-09 12:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,11 +16,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: forms.py:66
+#: admin.py:32
+msgid "has_usable_password"
+msgstr "has local password"
+
+#: admin.py:46
+msgid "Synchronize with SSO server"
+msgstr ""
+
+#: forms.py:67
 msgid "Open location tree"
 msgstr ""
 
-#: forms.py:138
+#: forms.py:140
 msgid "Parent location"
 msgstr ""
 
@@ -64,7 +72,7 @@ msgstr ""
 msgid "Manage sources."
 msgstr ""
 
-#: views.py:84 views.py:151
+#: views.py:84 views.py:139
 msgid "Locations"
 msgstr ""
 
@@ -72,7 +80,7 @@ msgstr ""
 msgid "Manage locations."
 msgstr ""
 
-#: views.py:90 views.py:173
+#: views.py:90 views.py:160
 msgid "Access groups"
 msgstr ""
 
@@ -80,11 +88,11 @@ msgstr ""
 msgid "Manage who has access to your data."
 msgstr ""
 
-#: views.py:282
+#: views.py:270
 msgid "Add a {model_name}"
 msgstr ""
 
-#: views.py:284
+#: views.py:272
 msgid "Edit a {model_name}"
 msgstr ""
 
@@ -108,21 +116,21 @@ msgstr ""
 msgid "Return"
 msgstr ""
 
-#: templates/ddsc_management/form.html:20
+#: templates/ddsc_management/form.html:21
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/ddsc_management/form.html:27
+#: templates/ddsc_management/form.html:28
 msgid "Please fill in the form below"
 msgstr ""
 
-#: templates/ddsc_management/form.html:34
+#: templates/ddsc_management/form.html:35
 msgid "Submit"
 msgstr ""
 
-#: templates/ddsc_management/form.html:34
+#: templates/ddsc_management/form.html:35
 msgid "Reset values"
 msgstr ""
 
@@ -130,26 +138,26 @@ msgstr ""
 msgid "All available locations"
 msgstr ""
 
-#: templates/ddsc_management/locations.html:19
-#: templates/ddsc_management/sources.html:19
-#: templates/ddsc_management/timeseries.html:23
-msgid "Name"
+#: templates/ddsc_management/locations.html:20
+#: templates/ddsc_management/timeseries.html:20
+msgid "UUID"
 msgstr ""
 
-#: templates/ddsc_management/locations.html:23
-#: templates/ddsc_management/timeseries.html:19
-msgid "UUID"
+#: templates/ddsc_management/locations.html:24
+#: templates/ddsc_management/sources.html:20
+#: templates/ddsc_management/timeseries.html:24
+msgid "Name"
 msgstr ""
 
 #: templates/ddsc_management/sources.html:9
 msgid "All available sources"
 msgstr ""
 
-#: templates/ddsc_management/sources.html:23
+#: templates/ddsc_management/sources.html:24
 msgid "Source type"
 msgstr ""
 
-#: templates/ddsc_management/sources.html:27
+#: templates/ddsc_management/sources.html:28
 msgid "Manufacturer"
 msgstr ""
 
