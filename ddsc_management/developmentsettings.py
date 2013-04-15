@@ -39,6 +39,11 @@ CACHES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'lizard_auth_client.backends.SSOBackend',
+)
+
 # SSO
 SSO_STANDALONE = False
 SSO_ENABLED = True

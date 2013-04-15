@@ -1,42 +1,38 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
 
-import logging
 from urllib import urlencode
+import logging
 
-from django.utils.translation import ugettext as _
-from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.utils import simplejson
-from django.utils.decorators import method_decorator
-from django.views.generic.edit import FormMixin, FormView, ProcessFormView, BaseFormView, ModelFormMixin
-from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import View
-from django.views.generic.base import TemplateResponseMixin
-from django.views.decorators.cache import never_cache
-from django.db.models.loading import get_model
-from django.template import loader, Context, RequestContext
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import User
 from django.core import serializers
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext as _
+from django.views.generic.list import MultipleObjectMixin
+from django_tables2 import SingleTableMixin
 
-from lizard_ui.views import UiView
 from lizard_ui.layout import Action
+from lizard_ui.views import UiView
 
 from ddsc_core import models
 
 from ddsc_management import forms
-from ddsc_management.utils import get_datatables_records, treebeard_nodes_to_jstree
 from ddsc_management.generic_views import (
     JsonView,
-    MySingleObjectMixin,
-    MyFormMixin,
-    MyProcessFormMixin,
     ModelDataSourceView,
+    MyFormMixin,
+    MyModelClassMixin,
+    MySingleObjectMixin,
     MyTemplateMixin,
-    MyModelClassMixin
 )
+from ddsc_management.tables import UserTable
+from ddsc_management.utils import treebeard_nodes_to_jstree
 
 logger = logging.getLogger(__name__)
+
 
 class BaseView(UiView):
     action = None
@@ -99,21 +95,26 @@ class BaseView(UiView):
         context['action'] = self.action
         return context
 
+
 class SummaryView(BaseView):
     template_name = 'ddsc_management/summary.html'
     page_title = _('Summary')
+
 
 class AlarmsView(BaseView):
     template_name = 'ddsc_management/alarms.html'
     page_title = _('Alarms')
 
+
 class ImportView(BaseView):
     template_name = 'ddsc_management/import.html'
     page_title = _('Import data')
 
+
 class TimeseriesView(BaseView):
     template_name = 'ddsc_management/timeseries.html'
     page_title = _('Timeseries')
+
 
 class TimeseriesApiView(ModelDataSourceView):
     model = models.Timeseries
@@ -123,9 +124,11 @@ class TimeseriesApiView(ModelDataSourceView):
     def query_set(self):
         return self.model.objects_nosecurity.all()
 
+
 class SourcesView(BaseView):
     template_name = 'ddsc_management/sources.html'
     page_title = _('Sources')
+
 
 class SourcesApiView(ModelDataSourceView):
     model = models.Source
@@ -134,13 +137,16 @@ class SourcesApiView(ModelDataSourceView):
     def list(self):
         return super(SourcesApiView, self).list()
 
+
 class LocationsView(BaseView):
     template_name = 'ddsc_management/locations.html'
     page_title = _('Locations')
 
+
 class LocationsApiView(ModelDataSourceView):
     model = models.Location
     allowed_columns = ['uuid', 'name']
+
 
 class LocationTreeView(JsonView):
     def get_json(self, request, *args, **kwargs):
@@ -155,11 +161,14 @@ class LocationTreeView(JsonView):
             nodes = models.Location.get_root_nodes()
         return treebeard_nodes_to_jstree(nodes)
 
+
 class AccessGroupsView(BaseView):
     template_name = 'ddsc_management/access_groups.html'
     page_title = _('Access groups')
 
-class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTemplateMixin, JsonView):
+
+class DynamicFormView(MyModelClassMixin, MySingleObjectMixin,
+    MyFormMixin, MyTemplateMixin, JsonView):
     action = None
     template_name = 'ddsc_management/dynamic_form.html'
     model_name_to_form = {
@@ -204,7 +213,9 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
         if self.form.is_valid():
             instance = self.form_valid()
             result = {
-                'html': '<p>OK, saved as {} with pk={}</p>'.format(str(instance), instance.pk),
+                'html': '<p>OK, saved as {} with pk={}</p>'.format(
+                    str(instance), instance.pk
+                ),
                 'success': True,
                 'pk': instance.pk,
                 'name': str(instance),
@@ -251,10 +262,16 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
         '''
         if self.action == 'add':
             qs = urlencode({'for_modal': str(self.for_modal)})
-            return reverse('ddsc_management.dynamic_form.add', kwargs={'model_name': self.model_name}) + '?' + qs
+            return reverse(
+                'ddsc_management.dynamic_form.add',
+                kwargs={'model_name': self.model_name}
+            ) + '?' + qs
         elif self.action == 'edit':
             qs = urlencode({'pk': self.pk, 'for_modal': str(self.for_modal)})
-            return reverse('ddsc_management.dynamic_form.edit', kwargs={'model_name': self.model_name}) + '?' + qs
+            return reverse(
+                'ddsc_management.dynamic_form.edit',
+                kwargs={'model_name': self.model_name}
+            ) + '?' + qs
 
     def form_id(self):
         '''
@@ -272,7 +289,9 @@ class DynamicFormView(MyModelClassMixin, MySingleObjectMixin, MyFormMixin, MyTem
             header = _('Edit a {model_name}')
         return header.format(model_name=self.model._meta.verbose_name)
 
-class GenericDetailView(MyModelClassMixin, MySingleObjectMixin, MyTemplateMixin, JsonView):
+
+class GenericDetailView(MyModelClassMixin, MySingleObjectMixin,
+    MyTemplateMixin, JsonView):
     template_name = 'ddsc_management/generic_detail.html'
     model_name_to_class = {
         'manufacturer': models.Manufacturer,
@@ -306,3 +325,30 @@ class GenericDetailView(MyModelClassMixin, MySingleObjectMixin, MyTemplateMixin,
             return HttpResponse(content=result['html'])
         else:
             return result
+
+
+class OverviewsView(BaseView):
+    """Display a list of links to administrative reports."""
+    template_name = 'ddsc_management/overviews.html'
+    page_title = 'Overviews'
+
+
+class UsersView(BaseView, SingleTableMixin, MultipleObjectMixin):
+    """Lists all users and their roles."""
+    template_name = 'ddsc_management/users.html'
+    page_title = 'Users'
+    model = User
+    table_class = UserTable
+
+    # TODO: implement a more fine-grained access control?
+    @method_decorator(permission_required('is_superuser'))
+    def dispatch(self, *args, **kwargs):
+        return super(UsersView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        # Note that both BaseView and SingleTableMixin
+        # override the `get_context_data` function.
+        context = super(UsersView, self).get_context_data(**kwargs)
+        table = self.get_table()
+        context[self.get_context_table_name(table)] = table
+        return context

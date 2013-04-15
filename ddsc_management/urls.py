@@ -3,11 +3,12 @@ from django.conf.urls.defaults import include
 from django.conf.urls.defaults import patterns
 from django.conf.urls.defaults import url
 from django.contrib import admin
+from django.views.generic import TemplateView
 from lizard_map.views import HomepageView
 from lizard_ui.urls import debugmode_urlpatterns
 
-from ddsc_management import views
 from ddsc_management import generic_views
+from ddsc_management import views
 
 admin.autodiscover()
 
@@ -58,6 +59,10 @@ urlpatterns = patterns(
         views.GenericDetailView.as_view(), name='ddsc_management.generic_detail'),
 
     url(r'^access_groups/$', views.AccessGroupsView.as_view(), name='ddsc_management.access_groups'),
+
+    # overviews
+    url(r'^overviews/$', views.OverviewsView.as_view(), name='ddsc_management.overviews'),
+    url(r'^overviews/users/$', views.UsersView.as_view(), name='ddsc_management.users'),
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^map/', include('lizard_map.urls')),

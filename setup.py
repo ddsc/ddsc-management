@@ -15,6 +15,7 @@ install_requires = [
     'django-extensions',
     'django-floppyforms == 1.0',
     'django-nose',
+    'django-tables2',
     'django-treebeard',
     'gunicorn',
     'lizard-auth-client',

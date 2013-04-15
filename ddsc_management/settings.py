@@ -127,7 +127,7 @@ MIDDLEWARE_CLASSES = (
     )
 
 TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
-    'django.core.context_processors.request',  # treebeard
+    'django.core.context_processors.request',  # django-tables2, treebeard
 )
 
 # Customize branding by overriding base_site.html
@@ -155,6 +155,7 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django_tables2',
     'djcelery',
     'gunicorn',
 )
@@ -183,7 +184,7 @@ UI_SITE_ACTIONS = [
     ),
     Action(
         name="Overzichten",
-        url=LIZARD_SITE,
+        url="/overviews/",
     ),
     Action(
         name="Beheer",
