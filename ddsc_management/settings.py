@@ -202,6 +202,14 @@ CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 # Tell Django about the user profile
 AUTH_PROFILE_MODULE = "ddsc_management.UserProfile"
 
+# Add our SSO server as an authentication backend.
+# This requires further setup in localsettings.
+# See lizard-auth-client on github.
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'lizard_auth_client.backends.SSOBackend',
+)
+
 try:
     # For local overrides (DB passwords, for instance)
     from ddsc_management.localsettings import *  # NOQA
