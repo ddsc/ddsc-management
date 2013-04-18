@@ -202,12 +202,13 @@ CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
 # Tell Django about the user profile
 AUTH_PROFILE_MODULE = "ddsc_management.UserProfile"
 
-# Add our SSO server as an authentication backend.
-# This requires further setup in localsettings.
-# See lizard-auth-client on github.
+# Enabling our SSO server as an authentication backend, would grant all DDSC
+# users access to this management website. This requires further protection
+# of views, etc, and some serious testing. Disable SSO until then.
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'lizard_auth_client.backends.SSOBackend',
+#   'lizard_auth_client.backends.SSOBackend',
+#   'lizard_security.backends.DDSCPermissionBackend',
 )
 
 try:
