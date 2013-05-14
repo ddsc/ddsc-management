@@ -52,18 +52,18 @@ class BaseView(UiView):
                 url=reverse('ddsc_management.summary'),
                 icon=''
             ),
-            Action(
-                name=_('Alarms'),
-                description=_('Manage alarms.'),
-                url=reverse('ddsc_management.alarms'),
-                icon=''
-            ),
-            Action(
-                name=_('Import data'),
-                description=_('Manually import data from csv files.'),
-                url=reverse('ddsc_management.import'),
-                icon=''
-            ),
+#           Action(
+#               name=_('Alarms'),
+#               description=_('Manage alarms.'),
+#               url=reverse('ddsc_management.alarms'),
+#               icon=''
+#           ),
+#           Action(
+#               name=_('Import data'),
+#               description=_('Manually import data from csv files.'),
+#               url=reverse('ddsc_management.import'),
+#               icon=''
+#           ),
             Action(
                 name=_('Timeseries'),
                 description=_('Manage timeseries.'),
@@ -82,12 +82,12 @@ class BaseView(UiView):
                 url=reverse('ddsc_management.locations'),
                 icon=''
             ),
-            Action(
-                name=_('Access groups'),
-                description=_('Manage who has access to your data.'),
-                url=reverse('ddsc_management.access_groups'),
-                icon=''
-            ),
+#           Action(
+#               name=_('Access groups'),
+#               description=_('Manage who has access to your data.'),
+#               url=reverse('ddsc_management.access_groups'),
+#               icon=''
+#           ),
         ]
 
     def get_context_data(self, **kwargs):
