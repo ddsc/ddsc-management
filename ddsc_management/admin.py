@@ -9,7 +9,6 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.translation import ugettext as _
-from piston.models import Consumer, Nonce, Resource, Token
 
 from ddsc_management.models import UserProfile
 from lizard_auth_client.client import sso_get_users_django
@@ -111,10 +110,3 @@ admin.site.register(User, DdscUserAdmin)
 # Register others:
 
 admin.site.register(UserProfile)
-
-# Hide Piston:
-
-admin.site.unregister(Consumer)
-admin.site.unregister(Nonce)
-admin.site.unregister(Resource)
-admin.site.unregister(Token)

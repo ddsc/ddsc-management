@@ -19,7 +19,6 @@ install_requires = [
     'django-treebeard',
     'gunicorn',
     'lizard-auth-client',
-    'lizard-map',
     'lizard-ui',
     'python-memcached',
     'raven',
