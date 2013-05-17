@@ -1,4 +1,4 @@
-\# Base Django settings, suitable for production.
+# Base Django settings, suitable for production.
 # Imported (and partly overridden) by developmentsettings.py which also
 # imports localsettings.py (which isn't stored in svn).  Buildout takes care
 # of using the correct one.
