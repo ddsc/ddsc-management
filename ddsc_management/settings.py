@@ -171,28 +171,24 @@ SENTRY_DSN = None
 # override me in localsettings
 UI_GAUGES_SITE_ID = ''
 
-LIZARD_SITE = 'http://test.dijkdata.nl/'
-MANAGEMENT_SITE = 'http://test.beheer.dijkdata.nl/'
+LIZARD_SITE = 'http://dijkdata.nl/'
+MANAGEMENT_SITE = 'http://beheer.dijkdata.nl/'
 
 UI_SITE_ACTIONS = [
     Action(
         name="Kaart",
-        url=LIZARD_SITE,
+        url=LIZARD_SITE + '#map',
         # description="",
         # icon="icon-info-sign",
         # klass="has_popover_south"
     ),
     Action(
         name="Grafieken",
-        url=LIZARD_SITE,
-    ),
-    Action(
-        name="Overzichten",
-        url="/overviews/",
+        url=LIZARD_SITE + '#graphs',
     ),
     Action(
         name="Beheer",
-        # url=MANAGEMENT_SITE,
+        url=MANAGEMENT_SITE,
         # description="",
         # icon="icon-info-sign",
         # klass="has_popover_south"
@@ -214,6 +210,8 @@ AUTHENTICATION_BACKENDS = (
 #   'lizard_auth_client.backends.SSOBackend',
 #   'lizard_security.backends.DDSCPermissionBackend',
 )
+
+LOGIN_URL = '/ui/accounts/login/'
 
 try:
     # For local overrides (DB passwords, for instance)
