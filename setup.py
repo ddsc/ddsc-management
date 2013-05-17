@@ -11,6 +11,7 @@ long_description = '\n\n'.join([
 install_requires = [
     'Django',
     'ddsc-core',
+    'ddsc-site', # for lizard-wms and ddsc-site entries in the admin
     'django-celery',
     'django-extensions',
     'django-floppyforms == 1.0',
