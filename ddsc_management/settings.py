@@ -1,4 +1,4 @@
-# Base Django settings, suitable for production.
+\# Base Django settings, suitable for production.
 # Imported (and partly overridden) by developmentsettings.py which also
 # imports localsettings.py (which isn't stored in svn).  Buildout takes care
 # of using the correct one.
@@ -139,8 +139,12 @@ INSTALLED_APPS = (
     'ddsc_management',
     'lizard_auth_client',
     'lizard_security',  # before lizard_ui!
-    'lizard_ui',  # after lizard_security!
     'ddsc_core',  # after lizard_security!
+    'lizard_ui',  # after lizard_security!
+    'lizard_map',
+    'lizard_maptree',
+    'lizard_wms',
+    'ddsc_site', # depends on lizard_wms & lizard_security
     'treebeard',
     'floppyforms',
     'south',
