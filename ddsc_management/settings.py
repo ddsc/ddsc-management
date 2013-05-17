@@ -215,8 +215,6 @@ AUTHENTICATION_BACKENDS = (
 #   'lizard_security.backends.DDSCPermissionBackend',
 )
 
-AUTH_PROFILE_MODULE = 'ddsc_site.UserProfile'
-
 try:
     # For local overrides (DB passwords, for instance)
     from ddsc_management.localsettings import *  # NOQA
