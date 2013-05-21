@@ -92,8 +92,6 @@ class DdscUserAdmin(UserAdmin):
         local_user.last_name = sso_user.get('last_name')
         local_user.email = sso_user.get('email')
         local_user.is_active = sso_user.get('is_active', False)
-        local_user.is_superuser = sso_user.get('is_superuser', False)
-        local_user.is_staff = sso_user.get('is_staff', False)
         local_user.date_joined = sso_user.get('created_at')
 
         # TODO: synchronize user profile as well?
