@@ -144,7 +144,7 @@ INSTALLED_APPS = (
     'lizard_map',
     'lizard_maptree',
     'lizard_wms',
-    'ddsc_site', # depends on lizard_wms & lizard_security
+    'ddsc_site',  # depends on lizard_wms & lizard_security
     'treebeard',
     'floppyforms',
     'south',
@@ -205,10 +205,13 @@ AUTH_PROFILE_MODULE = "ddsc_management.UserProfile"
 # Enabling our SSO server as an authentication backend, would grant all DDSC
 # users access to this management website. This requires further protection
 # of views, etc, and some serious testing. Disable SSO until then.
+# 2013-05-24: most functionality has been removed and this 'management'
+# site has almost become obsolete in favor of Bastiaan's SmartClient
+# interface in ddsc-api.
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-#   'lizard_auth_client.backends.SSOBackend',
-#   'lizard_security.backends.DDSCPermissionBackend',
+    'lizard_auth_client.backends.SSOBackend',
+    'lizard_security.backends.DDSCPermissionBackend',
 )
 
 LOGIN_URL = '/ui/accounts/login/'
