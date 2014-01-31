@@ -11,7 +11,7 @@ long_description = '\n\n'.join([
 install_requires = [
     'Django',
     'ddsc-core',
-    'ddsc-site', # for lizard-wms and ddsc-site entries in the admin
+    'ddsc-site',  # for lizard-wms and ddsc-site entries in the admin
     'django-celery',
     'django-extensions',
     'django-floppyforms == 1.0',
@@ -21,6 +21,7 @@ install_requires = [
     'gunicorn',
     'lizard-auth-client',
     'lizard-ui',
+    'pyproj',
     'python-memcached',
     'raven',
     'six',  # floppyforms secretly depends on this
