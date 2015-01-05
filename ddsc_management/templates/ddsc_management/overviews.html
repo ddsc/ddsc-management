@@ -4,7 +4,7 @@
 <div>
   <ul>
     {% if request.user.is_superuser %}
-    <li><a href="{% url ddsc_management.users %}">All users and their roles</a></li>
+    <li><a href="{% url 'ddsc_management.users' %}">All users and their roles</a></li>
     {% endif %}
   </ul>
 </div>
